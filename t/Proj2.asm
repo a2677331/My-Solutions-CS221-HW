@@ -19,6 +19,9 @@ PROCEDURES CALLED:
     Internal procedures called:
 	Greet
 	Hanoi
+	haha
+	jian zhong
+	123
 |
 INCLUDELIB iofar
 
