@@ -22,6 +22,7 @@ PROCEDURES CALLED:
 	haha
 	jian zhong
 	123
+	456
 |
 INCLUDELIB iofar
 
