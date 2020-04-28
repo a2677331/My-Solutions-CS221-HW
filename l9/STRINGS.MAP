@@ -1,0 +1,22 @@
+
+ Start  Stop   Length Name               Class
+
+ 00000H 0021AH 0021BH STRINGS_TEXT       CODE
+ 00220H 005DAH 003BBH _DATA              DATA
+ 005E0H 007DFH 00200H STACK              STACK
+
+
+Detailed map of segments
+
+ 0000:0000 021B C=CODE   S=STRINGS_TEXT   G=(none)  M=C:STRINGS.ASM ACBP=48
+ 0022:0000 03BB C=DATA   S=_DATA          G=DGROUP  M=C:STRINGS.ASM ACBP=48
+ 0022:03C0 0200 C=STACK  S=STACK          G=DGROUP  M=C:STRINGS.ASM ACBP=74
+
+  Address         Publics by Name
+
+
+  Address         Publics by Value
+
+
+Program entry point at 0000:0000
+

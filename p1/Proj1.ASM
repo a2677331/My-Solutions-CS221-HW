@@ -9,9 +9,9 @@ INCLUDELIB iofar
 	 .data
 Prompt1	 db  'Enter integers #$'
 Prompt2  db  ': $'
-arr1  dw  10 dup(0)     ; an unsorted array needs to be sorted, 10 items
-arr2  dw  10 dup(0)     ; copied version of arr1, 10 items
-iNum dw  10             ; total number of items in the array
+arr1  dw  10 dup(0)     ; an array of integers, will be passed for insertion Sort later
+arr2  dw  10 dup(0)     ; copied version of arr1
+iNum dw  10             ; total number of items in arr1
 Count	 dw  1          ; input counter
 MsgEcho  db  'The input was:$'
 MsgUnsorted	 db  'Unsorted List $'

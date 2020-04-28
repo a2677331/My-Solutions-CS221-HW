@@ -1,0 +1,327 @@
+Turbo Assembler	 Version 3.1	    04/27/20 02:56:43	    Page 1
+c:proj3.ASM
+
+
+
+      1				     comment |
+      2				     ***************************************************************
+      3				     Programmer:  Jian Zhong
+      4				     Date      :  Apr 27th, 2020
+      5				     Course    :  CS221	- Machine Organization & Assembly Lang.	Programming
+      6				     Project   :  This program uses a recursive	procedure to
+      7						       compute the nth value of	the Fibonacci series
+      8
+      9				     Assembler :  Borland TASM 3.0
+     10				     File Name :  proj3.asm
+     11
+     12				     Input  :  An positive integer.
+     13				     Output :  Value of	the Fibonacci series by	input number.
+     14
+     15				     PROCEDURES	CALLED:
+     16					 External procedures called:
+     17					     FROM iofar.lib: PutStr, PutCrLf, GetDec, PutDec
+     18					 Internal procedures called:
+     19					     Greet, Find_Fib
+     20				     |
+     21
+     22				     ;****** BEGIN MAIN	PROGRAM	************************************
+     23					 DOSSEG
+     24					 .186
+     25	0000				 .model	large
+     26	0000				 .stack	200h
+     27
+     28				     ;****** MAIN PROGRAM DATA SEGMENT *****************************
+     29	0000				  .data
+     30	0000  50 6C 65 61 73 65	20+  PromptFibNum    db	 'Please enter a Number: $'
+     31	      65 6E 74 65 72 20	61+
+     32	      20 4E 75 6D 62 65	72+
+     33	      3A 20 24
+     34	0018  2A 2A 2A 20 49 6E	70+  PromptTryAgain  db	 '*** Input should be integer greater than 0 ***, please try again: $'
+     35	      75 74 20 73 68 6F	75+
+     36	      6C 64 20 62 65 20	69+
+     37	      6E 74 65 67 65 72	20+
+     38	      67 72 65 61 74 65	72+
+     39	      20 74 68 61 6E 20	30+
+     40	      20 2A 2A 2A 2C 20	70+
+     41	      6C 65 61 73 65 20	74+
+     42	      72 79 20 61 67 61	69+
+     43	      6E 3A 20 24
+     44	005B  54 68 65 20 6E 75	6D+  NumEcho	     db	 'The number you entered was:$'
+     45	      62 65 72 20 79 6F	75+
+     46	      20 65 6E 74 65 72	65+
+     47	      64 20 77 61 73 3A	24
+     48	0077  54 68 65 20 76 61	6C+  FibEcho	     db	 'The value of Fibonacci series	is $'
+     49	      75 65 20 6F 66 20	46+
+     50	      69 62 6F 6E 61 63	63+
+     51	      69 20 73 65 72 69	65+
+     52	      73 20 69 73 20 24
+     53	0099  ????		     Num	     dw	 ? ; Number entered by user for	computing Fib sequence
+     54
+     55
+     56				     ;****** MAIN PROGRAM CODE SEGMENT *****************************
+     57	009B				 .code
+Turbo Assembler	 Version 3.1	    04/27/20 02:56:43	    Page 2
+c:proj3.ASM
+
+
+
+     58					 extrn	  PutCrLf: PROC
+     59					 extrn	  GetDec: PROC,	PutDec:	PROC
+     60
+     61	0000			     ProgramStart   PROC  NEAR
+     62
+     63				     ; Initializing ds register	to hold	data segment address
+     64	0000  B8 0000s			 mov ax,@data
+     65	0003  8E D8			 mov ds,ax
+     66
+     67				     ; Call procedure Greet to print introductory messages to the user
+     68	0005  E8 008D			 call	 Greet		     ; void Greet()
+     69
+     70				     ; cout << "Please enter a Number for computing Fib	sequence: ";
+     71	0008			     WHILE_01:
+     72	0008  BA 0000r			 mov dx,OFFSET PromptFibNum  ; point to	the PromptFibNum
+     73	000B  B4 09			 mov ah,9		     ; DOS print string	function #
+     74	000D  CD 21			 int 21h		     ; print string
+     75
+     76				     ; Fetch input integer from	user and store into "Num" para
+     77	000F  0E E8 0000e		 call	 far ptr GetDec	     ; get integer from	keyboard, return in ax
+     78	0013  0E E8 0000e		 call	 far ptr PutCrLf     ; /n
+     79	0017  A3 0099r			 mov Num,ax		     ; load user input in Num
+     80
+     81				     ; Print to	verify the number was correctly	input:
+     82					 ; cout	<< ''The number	you entered was: '';
+     83	001A  BA 005Br			 mov dx,OFFSET NumEcho	; point	to the NumEcho mesg
+     84	001D  B4 09			 mov ah,9		; DOS print string function #
+     85	001F  CD 21			 int 21h		    ; print string
+     86					 ; cout	<< Num;
+     87	0021  A1 0099r			 mov ax,Num		; put parameter	for subroutine PutDec in ax
+     88	0024  0E E8 0000e		 call	     PutDec	    ; print the	decimal	integer	in ax
+     89	0028  0E E8 0000e		 call	 PutCrLf
+     90	002C  0E E8 0000e		 call	 PutCrLf
+     91
+     92				     ; Verify if the input is negative:
+     93	0030  83 3E 0099r 00		 cmp Num, 0	      ;	while (Num < 0)
+     94	0035  7C 03			 jl	 TryAgain_01  ;	if Num < 0, prompt user	to try again
+     95	0037  EB 12 90			 jmp	 ENDWHILE_01  ;	valid input, end while loop
+     96
+     97				     ; Num < 0:
+     98	003A			     TryAgain_01:
+     99	003A  BA 0018r			 mov dx,OFFSET PromptTryAgain	; set pointer to PromptTryAgain	mesg
+    100	003D  B4 09			 mov ah,9			; DOS print string function #
+    101	003F  CD 21			 int 21h			; print	string
+    102	0041  0E E8 0000e		 call	 PutCrLf
+    103	0045  0E E8 0000e		 call	 PutCrLf
+    104	0049  EB BD			 jmp	 WHILE_01	 ; jump	back to	try again
+    105
+    106	004B			     ENDWHILE_01:		 ; End of WHILE_01 LOOP
+    107
+    108					; cout << "The value of	Fibonacci series is ";
+    109	004B  BA 0077r			mov  dx,OFFSET FibEcho	 ; point to the	FibEcho	mesg
+    110	004E  B4 09			mov  ah,9		 ; DOS print string function #
+    111	0050  CD 21			int  21h		     ; print string
+    112
+    113					; cout << Find_Fib(Num)	<< endl;
+    114	0052  FF 36 0099r		push Num		 ; pass	Num parameter for Find_Fib PROC
+Turbo Assembler	 Version 3.1	    04/27/20 02:56:43	    Page 3
+c:proj3.ASM
+
+
+
+    115	0056  E8 000E			call	Find_Fib	 ; call	Find_Fib PROC to compute Fibonacci Series
+    116	0059  8B C1			mov ax,cx		 ; store cx(result) into ax
+    117	005B  0E E8 0000e		call	PutDec		 ; print the decimal integer in	ax
+    118	005F  0E E8 0000e		call	PutCrLf		 ; /n
+    119
+    120	0063  B4 4C			 mov	ah,4ch	  ; DOS	terminate program fn #
+    121	0065  CD 21			 int	21h
+    122	0067			     ProgramStart    ENDP ; end	of main	program
+    123
+    124
+    125				     ;------------------------------------------------------
+    126				     ; Procddure Name: Find_Fib
+    127				     ;
+    128				     ; Purpose : Compute the value of the Fibonacci series of Num;
+    129				     ;		 This procudure	uses a recursive algorithm;
+    130				     ;		 Return	1 if N <= 1;
+    131				     ; Input:
+    132				     ;		 N -  Pass by value parameter
+    133				     ;
+    134				     ; Output:
+    135				     ;		 cx - Value of the Fibonacci series of N
+    136				     ;
+    137				     ; Registers:
+    138				     ;		 cx
+    139				     ;
+    140				     ; Procedures Called : Main	Program	and Find_Fib
+    141				     ;
+    142				     ;--------------------------------------------------------
+    143				     ;****** SUBROUTINE	DATA SEGMENT ********************************
+    144	0067				 .data
+    145	      =	WORD PTR [bp+10]	 N     EQU   WORD PTR [bp+10] ;	set N as an alias for [bp+10]
+    146
+    147				     ;****** SUBROUTINE	CODE SEGMENT ********************************
+    148	009B				 .code
+    149	0067			     Find_Fib PROC    NEAR
+    150				     ; Save modified registers and initialize base pointer
+    151	0067  50			 push ax
+    152	0068  53			 push bx
+    153	0069  52			 push dx
+    154	006A  55			 push bp
+    155	006B  8B EC			 mov bp,sp
+    156
+    157				     ; if (N <=	1)
+    158	006D  83 7E 0A 01		 cmp N,1	   ; compare N and 1
+    159	0071  7E 18			 jle IF_01	   ; Base Case:	Find_Fib(0) = 1	and Find_Fib(1)	= 1.
+    160
+    161				     ; Recursive Case: (N > 2):
+    162				     ;	 return	(Find_Fib(n - 1) + Find_Fib(n -	2));
+    163	0073  8B 46 0A			 mov ax,N	   ; load N into ax
+    164	0076  8B D8			 mov bx,ax	   ; load N into bx
+    165	0078  48			 dec ax		   ; now ax is n - 1
+    166	0079  83 EB 02			 sub bx,2	   ; now bx is n - 2
+    167
+    168	007C  50			 push ax	   ; passing n - 1 para
+    169	007D  E8 FFE7			 call	 Find_Fib  ; Find_Fib(n-1), value returns to cx
+    170	0080  8B D1			 mov dx,cx	   ; store the return value into dx
+    171
+Turbo Assembler	 Version 3.1	    04/27/20 02:56:43	    Page 4
+c:proj3.ASM
+
+
+
+    172	0082  53			 push bx	   ; passing n - 2 para
+    173	0083  E8 FFE1			 call	 Find_Fib  ; Find_Fib(n-2), value returns to cx
+    174	0086  03 CA			 add cx,dx	   ; store Find_Fib(n-2) + Find_Fib(n-1) into cx
+    175
+    176	0088  EB 04 90			 jmp ENDIF_01	   ; Recursive Case ends
+    177
+    178	008B			     IF_01:
+    179	008B  B9 0001			 mov cx,1	   ; return 1 in cx, Base Case ends
+    180
+    181	008E			     ENDIF_01:		   ; end of IF_01 statement
+    182
+    183				     ;Restore modified registers
+    184	008E  5D			 pop bp
+    185	008F  5A			 pop dx
+    186	0090  5B			 pop bx
+    187	0091  58			 pop ax
+    188
+    189				     ; Return to caller	module and clean the N parameter
+    190	0092  C2 0002			 ret	2
+    191	0095			     Find_Fib ENDP	   ; End of Find_Fib procedure
+    192
+    193
+    194				     comment |
+    195				     ******* PROCEDURE HEADER **************************************
+    196				       PROCEDURE NAME :	Greet
+    197				       PURPOSE :  To print an initial greeting to the user
+    198				       PROCEDURES CALLED :
+    199					 FROM iofar.lib: PutStr, PutCrLf
+    200				       CALLED FROM : main program
+    201				     |
+    202				     ;****** SUBROUTINE	DATA SEGMENT ********************************
+    203	0095				  .data
+    204	009B  20 20 20 20 57 65	6C+  Msgg1     db  '	Welcome	to Fibonacci Number Finding Program!$'
+    205	      63 6F 6D 65 20 74	6F+
+    206	      20 46 69 62 6F 6E	61+
+    207	      63 63 69 20 4E 75	6D+
+    208	      62 65 72 20 46 69	6E+
+    209	      64 69 6E 67 20 50	72+
+    210	      6F 67 72 61 6D 21	24
+    211	00CC  20 20 20 20 50 72	6F+  Msgg2     db  '	Programmer: Jian Zhong $'
+    212	      67 72 61 6D 6D 65	72+
+    213	      3A 20 4A 69 61 6E	20+
+    214	      5A 68 6F 6E 67 20	24
+    215	00E8  20 20 20 20 44 61	74+  Msgg3     db  '	Date:  27th Apr, 2020 $'
+    216	      65 3A 20 20 32 37	74+
+    217	      68 20 41 70 72 2C	20+
+    218	      32 30 32 30 20 24
+    219
+    220				     ;****** SUBROUTINE	CODE SEGMENT ********************************
+    221	0103				 .code
+    222	0095			     Greet    PROC    near ;
+    223				     ; Save registers on the stack
+    224	0095  60			 pusha
+    225	0096  9C			 pushf
+    226				     ; Print name of program
+    227	0097  0E E8 0000e		 call	 PutCrLf
+    228	009B  BA 009Br			 mov dx,OFFSET Msgg1 ; set pointer to 1st greeting message
+Turbo Assembler	 Version 3.1	    04/27/20 02:56:43	    Page 5
+c:proj3.ASM
+
+
+
+    229	009E  B4 09			 mov ah,9	     ; DOS print string	function #
+    230	00A0  CD 21			 int 21h	     ; print string
+    231	00A2  0E E8 0000e		 call	 PutCrLf
+    232				     ; Print name of programmer
+    233	00A6  BA 00CCr			 mov dx,OFFSET Msgg2 ; set pointer to 2nd greeting message
+    234	00A9  B4 09			 mov ah,9	     ; DOS print string	function #
+    235	00AB  CD 21			 int 21h	     ; print string
+    236	00AD  0E E8 0000e		 call	 PutCrLf
+    237				     ; Print date
+    238	00B1  BA 00E8r			 mov dx,OFFSET Msgg3 ; set pointer to 3rd greeting message
+    239	00B4  B4 09			 mov ah,9	     ; DOS print string	function #
+    240	00B6  CD 21			 int 21h	     ; print string
+    241	00B8  0E E8 0000e		 call	 PutCrLf
+    242	00BC  0E E8 0000e		 call	 PutCrLf
+    243				     ; Restore registers from stack
+    244	00C0  9D			 popf
+    245	00C1  61			 popa
+    246				     ; Return to caller	module
+    247	00C2  C3			 ret
+    248	00C3			     Greet    ENDP ; End Greet procedure
+    249
+    250				     end    ProgramStart ; End of Entire Program
+Turbo Assembler	 Version 3.1	    04/27/20 02:56:43	    Page 6
+Symbol Table
+
+
+
+
+Symbol Name		Type   Value			   Cref	(defined at #)
+
+??date			Text   "04/27/20"
+??filename		Text   "proj3	"
+??time			Text   "02:56:43"
+??version		Number 030A
+@32Bit			Text   0			   #25
+@CodeSize		Text   1			   #25
+@Cpu			Text   0103H			   #24
+@DataSize		Text   1			   #25
+@FileName		Text   proj3
+@Interface		Text   00h			   #25
+@Model			Text   5			   #25
+@WordSize		Text   2			   #24	#29  #57  #144	#148  #203  #221
+@code			Text   proj3_TEXT		   #25	#25  #57  #148	#221
+@curseg			Text   proj3_TEXT		   #29	#57  #144  #148	 #203  #221
+@data			Text   DGROUP			   #25	64
+@stack			Text   DGROUP			   #25
+ENDIF_01		Near   proj3_TEXT:008E		   176	#181
+ENDWHILE_01		Near   proj3_TEXT:004B		   95  #106
+FibEcho			Byte   DGROUP:0077		   #48	109
+Find_Fib		Near   proj3_TEXT:0067		   115	#149  169  173
+GetDec			Far    proj3_TEXT:---- Extern	   #59	77
+Greet			Near   proj3_TEXT:0095		   68  #222
+IF_01			Near   proj3_TEXT:008B		   159	#178
+Msgg1			Byte   DGROUP:009B		   #204	 228
+Msgg2			Byte   DGROUP:00CC		   #211	 233
+Msgg3			Byte   DGROUP:00E8		   #215	 238
+N			Text   WORD PTR	[bp+10]		   #145	 158  163
+Num			Word   DGROUP:0099		   #53	79  87	93  114
+NumEcho			Byte   DGROUP:005B		   #44	83
+ProgramStart		Near   proj3_TEXT:0000		   #61	250
+PromptFibNum		Byte   DGROUP:0000		   #30	72
+PromptTryAgain		Byte   DGROUP:0018		   #34	99
+PutCrLf			Far    proj3_TEXT:---- Extern	   #58	78  89	90  102	 103  118  227	231  236  241  242
+PutDec			Far    proj3_TEXT:---- Extern	   #59	88  117
+TryAgain_01		Near   proj3_TEXT:003A		   94  #98
+WHILE_01		Near   proj3_TEXT:0008		   #71	104
+
+Groups & Segments	Bit Size Align	Combine	Class	   Cref	(defined at #)
+
+DGROUP			Group				   #25	25  64
+  STACK			16  0200 Para	Stack	STACK	   #26
+  _DATA			16  0103 Word	Public	DATA	   #25	#29  #144  #203
+proj3_TEXT		16  00C3 Word	Public	CODE	   #25	25  #57	 57  #148  148	#221  221
+

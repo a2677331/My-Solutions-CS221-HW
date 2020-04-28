@@ -1,4 +1,4 @@
-Turbo Assembler	 Version 4.1	    03/31/20 16:47:41	    Page 1
+Turbo Assembler	 Version 3.1	    04/23/20 19:44:45	    Page 1
 c:proj1.asm
 
 
@@ -16,9 +16,9 @@ c:proj1.asm
      11	      6E 74 65 67 65 72	73+
      12	      20 23 24
      13	0011  3A 20 24		     Prompt2  db  ': $'
-     14	0014  0A*(0000)		     arr1  dw  10 dup(0)     ; unsorted	array, 10 items
-     15	0028  0A*(0000)		     arr2  dw  10 dup(0)     ; sorted array, 10	items
-     16	003C  000A		     iNum dw  10	     ; total number of items in	the array
+     14	0014  0A*(0000)		     arr1  dw  10 dup(0)     ; an array	of integers, will be passed for	insertion Sort later
+     15	0028  0A*(0000)		     arr2  dw  10 dup(0)     ; copied version of arr1
+     16	003C  000A		     iNum dw  10	     ; total number of items in	arr1
      17	003E  0001		     Count    dw  1	     ; input counter
      18	0040  54 68 65 20 69 6E	70+  MsgEcho  db  'The input was:$'
      19	      75 74 20 77 61 73	3A+
@@ -60,7 +60,7 @@ c:proj1.asm
      55	0019  B4 09			     mov     ah,9		; DOS print string function #
      56	001B  CD 21			     int     21h		    ; print string
      57
-Turbo Assembler	 Version 4.1	    03/31/20 16:47:41	    Page 2
+Turbo Assembler	 Version 3.1	    04/23/20 19:44:45	    Page 2
 c:proj1.asm
 
 
@@ -122,7 +122,7 @@ c:proj1.asm
     112	0082  FF 06 003Er		     inc     Count
     113	0086  83 C6 02			     add si,2		   ; increase the index	of the array
     114	0089  EB BA			     jmp     WHILE01
-Turbo Assembler	 Version 4.1	    03/31/20 16:47:41	    Page 3
+Turbo Assembler	 Version 3.1	    04/23/20 19:44:45	    Page 3
 c:proj1.asm
 
 
@@ -184,7 +184,7 @@ c:proj1.asm
     169
     170				     comment |
     171				     ******* PROCEDURE HEADER **************************************
-Turbo Assembler	 Version 4.1	    03/31/20 16:47:41	    Page 4
+Turbo Assembler	 Version 3.1	    04/23/20 19:44:45	    Page 4
 c:proj1.asm
 
 
@@ -246,7 +246,7 @@ c:proj1.asm
     226
     227	011C  8B 01			 mov ax,[bx+di]	; arr[j	+ 1] = arr [j]
     228	011E  89 41 02			 mov [bx+di+2],ax ;
-Turbo Assembler	 Version 4.1	    03/31/20 16:47:41	    Page 5
+Turbo Assembler	 Version 3.1	    04/23/20 19:44:45	    Page 5
 c:proj1.asm
 
 
@@ -308,7 +308,7 @@ c:proj1.asm
     283
     284				     ;****** SUBROUTINE	CODE SEGMENT ********************************
     285	00E9				     .code
-Turbo Assembler	 Version 4.1	    03/31/20 16:47:41	    Page 6
+Turbo Assembler	 Version 3.1	    04/23/20 19:44:45	    Page 6
 c:proj1.asm
 
 
@@ -349,7 +349,7 @@ c:proj1.asm
     319	015E  C3			     ret
     320	015F			     Greet   ENDP
     321					     end     ProgramStart
-Turbo Assembler	 Version 4.1	    03/31/20 16:47:41	    Page 7
+Turbo Assembler	 Version 3.1	    04/23/20 19:44:45	    Page 7
 Symbol Table
 
 
@@ -357,16 +357,16 @@ Symbol Table
 
 Symbol Name		Type   Value			   Cref	(defined at #)
 
-??date			Text   "03/31/20"
+??date			Text   "04/23/20"
 ??filename		Text   "proj1	"
-??time			Text   "16:47:41"
-??version		Number 040A
+??time			Text   "19:44:45"
+??version		Number 030A
 @32Bit			Text   0			   #5
 @CodeSize		Text   1			   #5
 @Cpu			Text   0103H			   #4
 @DataSize		Text   1			   #5
 @FileName		Text   proj1
-@Interface		Text   000h			   #5
+@Interface		Text   00h			   #5
 @Model			Text   5			   #5
 @WordSize		Text   2			   #4  #9  #31	#185  #264  #285
 @code			Text   proj1_TEXT		   #5  #5  #31	#185  #285

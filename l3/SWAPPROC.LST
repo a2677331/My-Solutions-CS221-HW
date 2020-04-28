@@ -1,0 +1,324 @@
+Turbo Assembler	 Version 4.1	    03/24/20 13:39:35	    Page 1
+c:swapproc.asm
+
+
+
+      1				     comment |
+      2				     ***************************************************************
+      3				     Programmer:
+      4				     Date      :  February 12, 2020
+      5				     Course    :  CS221	Machine	Organization & Assembly	Language Programming
+      6				     Project   :  ?? - Input two integers from the user, echo print the	integers,
+      7						       call a procedure	to swap	the values,
+      8						       print out the two integers after	swapping their values.
+      9				     Assembler :  Borland TASM 3.0
+     10				     File Name :  SwapProc.asm
+     11
+     12				     Input   :	Two integers.
+     13				     Output  :	The swapped values of the two integers.
+     14				     Input Files : None
+     15				     Output Files: None
+     16
+     17
+     18				     PROCEDURES	CALLED:
+     19					 External procedures called:
+     20					     FROM iofar.lib: PutCrLf, GetDec, PutDec
+     21					 Internal procedures called:
+     22					     Greet, Swap
+     23
+     24				     |
+     25				     ;****** BEGIN MAIN	PROGRAM	************************************
+     26					     DOSSEG
+     27					     .186
+     28	0000				     .model large
+     29	0000				     .stack 200h
+     30
+     31				     ;****** MAIN PROGRAM DATA SEGMENT *****************************
+     32	0000				      .data
+     33	0000  45 6E 74 65 72 20	61+  Prompt1  db  'Enter an integer: $'	 ; "$" is a string terminator, if without it, string never  +
+     34	      6E 20 69 6E 74 65	67+  ends.
+     35	      65 72 3A 20 24
+     36	0013  45 6E 74 65 72 20	61+  Prompt2  db  'Enter another integer: $'
+     37	      6E 6F 74 68 65 72	20+
+     38	      69 6E 74 65 67 65	72+
+     39	      3A 20 24
+     40	002B  ????		     Numb1    dw  ?
+     41	002D  ????		     Numb2    dw  ?
+     42	002F  ????		     Result   dw  ?
+     43	0031  54 68 65 20 74 77	6F+  MsgEcho  db  'The two input integers are: $'
+     44	      20 69 6E 70 75 74	20+
+     45	      69 6E 74 65 67 65	72+
+     46	      73 20 61 72 65 3A	20+
+     47	      24
+     48	004E  54 68 65 20 74 77	6F+  MsgOut   db  'The two integers after swapping: $'
+     49	      20 69 6E 74 65 67	65+
+     50	      72 73 20 61 66 74	65+
+     51	      72 20 73 77 61 70	70+
+     52	      69 6E 67 3A 20 24
+     53	0070  45 78 69 74 69 6E	67+  MsgEnd   db  'Exiting program $'
+     54	      20 70 72 6F 67 72	61+
+     55	      6D 20 24
+     56
+     57
+Turbo Assembler	 Version 4.1	    03/24/20 13:39:35	    Page 2
+c:swapproc.asm
+
+
+
+     58				     ;****** MAIN PROGRAM CODE SEGMENT *****************************
+     59	0081				     .code
+     60					     extrn   PutStr: PROC, PutCrLf: PROC
+     61					     extrn   GetDec: PROC, PutDec: PROC
+     62
+     63	0000			     ProgramStart   PROC
+     64
+     65				     ; Initialize ds register to hold data segment address
+     66	0000  B8 0000s			     mov     ax,@data
+     67	0003  8E D8			     mov     ds,ax
+     68
+     69				     ; Call procedure Greet to print introductory messages to the user
+     70	0005  E8 006E			     call    Greet	  ; call subroutine to print greeting
+     71
+     72				     ; Print input prompt message to the user
+     73	0008  BA 0000r			     mov     dx,OFFSET Prompt1	 ; point to the	Prompt mesg (⚠️ the	data's address you  +
+     74				     need to print)
+     75	000B  B4 09			     mov     ah,9		 ; DOS print string function # (⚠️ For Printng String   +
+     76				     Command)
+     77	000D  CD 21			     int     21h		     ; print string  (⚠️ interrupt the processor, and   +
+     78				     EXECUTE from mov ah,09 to int 21h)
+     79				     ; Input an	integer	from the user keyboard and assign it to	memory loc.
+     80	000F  0E E8 0000e		     call    GetDec	  ; integer from keyboard returned in ax
+     81	0013  A3 002Br			     mov     Numb1,ax	  ; store input	value in memory	location
+     82
+     83				     ; Print input prompt message to the user
+     84	0016  BA 0013r			     mov     dx,OFFSET Prompt2	; point	to the Prompt mesg
+     85	0019  B4 09			     mov     ah,9	  ; DOS	print string function #
+     86	001B  CD 21			     int     21h	  ; print string
+     87				     ; Input an	integer	from the user keyboard and assign it to	memory loc.
+     88	001D  0E E8 0000e		     call    GetDec	  ; integer from keyboard returned in ax
+     89	0021  A3 002Dr			     mov     Numb2,ax	  ; store input	value in memory	location
+     90
+     91				     ; Print to	verify the numbers were	correctly read from user & stored
+     92				       ; Print message
+     93	0024  BA 0031r			     mov     dx,OFFSET MsgEcho	; point	to the output mesg
+     94	0027  B4 09			     mov     ah,9	  ; DOS	print string function #
+     95	0029  CD 21			     int     21h	  ; print string
+     96				       ; Print the value of Numb1
+     97	002B  A1 002Br			     mov     ax,Numb1	  ; put	parameter for subroutine PutDec	in ax
+     98	002E  0E E8 0000e		     call    PutDec	  ; print the decimal integer in ax
+     99				       ; Print the value of Numb2
+    100	0032  A1 002Dr			     mov     ax,Numb2	  ; put	parameter for subroutine PutDec	in ax
+    101	0035  0E E8 0000e		     call    PutDec	  ; print the decimal integer in ax
+    102	0039  0E E8 0000e		     call    PutCrLf
+    103	003D  0E E8 0000e		     call    PutCrLf
+    104
+    105				     ; Push parameters on the system stack and
+    106				     ; call procedure to swap the values of the	two integers
+    107	0041  68 002Br			     push    OFFSET Numb1  ; pass by reference parameter
+    108	0044  68 002Dr			     push    OFFSET Numb2  ; pass by reference parameter
+    109	0047  E8 0056			     call    Swap	   ; call Swap(Numb1, Numb2)
+    110
+    111				     ; Print the integers after	swapping their values
+    112				       ; Print message
+    113	004A  BA 004Er			     mov     dx,OFFSET MsgOut  ; point to the output message
+    114	004D  B4 09			     mov     ah,9	  ; DOS	print string function #
+Turbo Assembler	 Version 4.1	    03/24/20 13:39:35	    Page 3
+c:swapproc.asm
+
+
+
+    115	004F  CD 21			     int     21h	  ; print string
+    116				       ; Print the value of Numb1
+    117	0051  A1 002Br			     mov     ax,Numb1	  ; put	parameter for subroutine PutDec	in ax
+    118	0054  0E E8 0000e		     call    PutDec	  ; print the decimal integer in ax
+    119				       ; Print the value of Numb2
+    120	0058  A1 002Dr			     mov     ax,Numb2	  ; put	parameter for subroutine PutDec	in ax
+    121	005B  0E E8 0000e		     call    PutDec	  ; print the decimal integer in ax
+    122	005F  0E E8 0000e		     call    PutCrLf
+    123
+    124				     ; Print ending message
+    125	0063  0E E8 0000e		     call    PutCrLf
+    126	0067  BA 0070r			     mov     dx,OFFSET MsgEnd  ; point to the output mesg
+    127	006A  B4 09			     mov     ah,9	  ; DOS	print string function #
+    128	006C  CD 21			     int     21h	  ; print string
+    129	006E  0E E8 0000e		     call    PutCrLf
+    130
+    131				     ; Exit to the operating system
+    132	0072  B4 4C			     mov     ah,4ch	  ; DOS	terminate program fn #
+    133	0074  CD 21			     int     21h
+    134	0076			     ProgramStart    ENDP
+    135
+    136
+    137				     comment |
+    138				     ******* PROCEDURE HEADER **************************************
+    139				       PROCEDURE NAME :	Greet
+    140				       PURPOSE :  To print initial greeting messages to	the user
+    141				       INPUT PARAMETERS	: None
+    142				       OUTPUT PARAMETERS or RETURN VALUE:  None
+    143				       NON-LOCAL VARIABLES REFERENCED: None
+    144				       NON-LOCAL VARIABLES MODIFIED :None
+    145				       PROCEDURES CALLED :
+    146					     FROM iofar.lib: PutCrLf
+    147				       CALLED FROM : main program
+    148				     |
+    149				     ;****** SUBROUTINE	DATA SEGMENT ********************************
+    150	0076				     .data
+    151	0081  50 72 6F 67 72 61	6D+  Msgg1    db  'Program:  Demo Swap Procedure Call with Parameters $'
+    152	      3A 20 20 44 65 6D	6F+
+    153	      20 53 77 61 70 20	50+
+    154	      72 6F 63 65 64 75	72+
+    155	      65 20 43 61 6C 6C	20+
+    156	      77 69 74 68 20 50	61+
+    157	      72 61 6D 65 74 65	72+
+    158	      73 20 24
+    159	00B5  50 72 6F 67 72 61	6D+  Msgg2    db  'Programmer: XXXXXXXXXXXX $'
+    160	      6D 65 72 3A 20 58	58+
+    161	      58 58 58 58 58 58	58+
+    162	      58 58 58 20 24
+    163	00CF  44 61 74 65 3A 20	20+  Msgg3    db  'Date:   February 12,	2020 $'
+    164	      20 46 65 62 72 75	61+
+    165	      72 79 20 31 32 2C	20+
+    166	      32 30 32 30 20 24
+    167
+    168
+    169				     ;****** SUBROUTINE	CODE SEGMENT ********************************
+    170	00EA				     .code
+    171	0076			     Greet   PROC    near
+Turbo Assembler	 Version 4.1	    03/24/20 13:39:35	    Page 4
+c:swapproc.asm
+
+
+
+    172
+    173				     ; Save registers on the stack
+    174	0076  60			     pusha
+    175	0077  9C			     pushf
+    176
+    177				     ; Print name of program
+    178	0078  BA 0081r			     mov     dx,OFFSET Msgg1 ; set pointer to 1st greeting message
+    179	007B  B4 09			     mov     ah,9	     ; DOS print string	function #
+    180	007D  CD 21			     int     21h	     ; print string
+    181	007F  0E E8 0000e		     call    PutCrLf
+    182
+    183				     ; Print name of programmer
+    184	0083  BA 00B5r			     mov     dx,OFFSET Msgg2 ; set pointer to 2nd greeting message
+    185	0086  B4 09			     mov     ah,9	     ; DOS print string	function #
+    186	0088  CD 21			     int     21h	     ; print string
+    187	008A  0E E8 0000e		     call    PutCrLf
+    188
+    189				     ; Print date
+    190	008E  BA 00CFr			     mov     dx,OFFSET Msgg3 ; set pointer to 3rd greeting message
+    191	0091  B4 09			     mov     ah,9	     ; DOS print string	function #
+    192	0093  CD 21			     int     21h	     ; print string
+    193	0095  0E E8 0000e		     call    PutCrLf
+    194	0099  0E E8 0000e		     call    PutCrLf
+    195
+    196				     ; Restore registers from stack
+    197	009D  9D			     popf
+    198	009E  61			     popa
+    199
+    200				     ; Return to caller	module
+    201	009F  C3			     ret
+    202	00A0			     Greet   ENDP
+    203
+    204
+    205				     comment |
+    206				     ******* PROCEDURE HEADER **************************************
+    207				       PROCEDURE NAME :	Swap
+    208				       PURPOSE :  To swap the values of	two parameters passed by reference
+    209				       INPUT PARAMETERS	:    Integer N1, pass by reference
+    210							     Integer N2, pass by reference
+    211				       OUTPUT PARAMETERS or RETURN VALUE:  Integer N1, Integer N2
+    212				       NON-LOCAL VARIABLES REFERENCED: None
+    213				       NON-LOCAL VARIABLES MODIFIED :None
+    214				       PROCEDURES CALLED : None
+    215				       CALLED FROM : main program
+    216				     |
+    217
+    218				     ;****** SUBROUTINE	CODE SEGMENT ********************************
+    219	00A0				     .code
+    220	00A0			     Swap  PROC	  near
+    221
+    222				     ; Save registers on the stack
+    223	00A0  60			     pusha
+    224	00A1  9C			     pushf
+    225	00A2  8B EC			     mov     bp,sp
+    226
+    227				     ; Copy the	value of second	parameter N2 into dx register
+    228	00A4  8B 5E 14			     mov     bx,[bp+20]	   ; copy address of N2	into bx
+Turbo Assembler	 Version 4.1	    03/24/20 13:39:35	    Page 5
+c:swapproc.asm
+
+
+
+    229	00A7  8B 17			     mov     dx,[bx]	   ; copy contents of N2 into dx
+    230
+    231				     ; Copy the	value of first parameter N1 into ax register
+    232	00A9  8B 5E 16			     mov     bx,[bp+22]	   ; copy address of N1	into bx
+    233	00AC  8B 07			     mov     ax,[bx]	   ; copy contents of N1 into ax
+    234
+    235				     ; Assign the original value of the	second parameter into loc N1
+    236	00AE  89 17			     mov     [bx],dx
+    237
+    238				     ; Assign the original value of the	first parameter	into loc N2
+    239	00B0  8B 5E 14			     mov     bx,[bp+20]
+    240	00B3  89 07			     mov     [bx],ax
+    241
+    242				     ; Restore registers from stack
+    243	00B5  9D			     popf
+    244	00B6  61			     popa
+    245
+    246				     ; Return to caller	module
+    247	00B7  C2 0004			     ret     4
+    248	00BA			     Swap    ENDP
+    249					     end     ProgramStart
+Turbo Assembler	 Version 4.1	    03/24/20 13:39:35	    Page 6
+Symbol Table
+
+
+
+
+Symbol Name		Type   Value			   Cref	(defined at #)
+
+??date			Text   "03/24/20"
+??filename		Text   "swapproc"
+??time			Text   "13:39:35"
+??version		Number 040A
+@32Bit			Text   0			   #28
+@CodeSize		Text   1			   #28
+@Cpu			Text   0103H			   #27
+@DataSize		Text   1			   #28
+@FileName		Text   swapproc
+@Interface		Text   000h			   #28
+@Model			Text   5			   #28
+@WordSize		Text   2			   #27	#32  #59  #150	#170  #219
+@code			Text   swapproc_TEXT		   #28	#28  #59  #170	#219
+@curseg			Text   swapproc_TEXT		   #32	#59  #150  #170	 #219
+@data			Text   DGROUP			   #28	66
+@stack			Text   DGROUP			   #28
+GetDec			Far    swapproc_TEXT:---- Extern   #61	80  88
+Greet			Near   swapproc_TEXT:0076	   70  #171
+MsgEcho			Byte   DGROUP:0031		   #43	93
+MsgEnd			Byte   DGROUP:0070		   #53	126
+MsgOut			Byte   DGROUP:004E		   #48	113
+Msgg1			Byte   DGROUP:0081		   #151	 178
+Msgg2			Byte   DGROUP:00B5		   #159	 184
+Msgg3			Byte   DGROUP:00CF		   #163	 190
+Numb1			Word   DGROUP:002B		   #40	81  97	107  117
+Numb2			Word   DGROUP:002D		   #41	89  100	 108  120
+ProgramStart		Far    swapproc_TEXT:0000	   #63	249
+Prompt1			Byte   DGROUP:0000		   #33	73
+Prompt2			Byte   DGROUP:0013		   #36	84
+PutCrLf			Far    swapproc_TEXT:---- Extern   #60	102  103  122  125  129	 181  187  193	194
+PutDec			Far    swapproc_TEXT:---- Extern   #61	98  101	 118  121
+PutStr			Far    swapproc_TEXT:---- Extern   #60
+Result			Word   DGROUP:002F		   #42
+Swap			Near   swapproc_TEXT:00A0	   109	#220
+
+Groups & Segments	Bit Size Align	Combine	Class	   Cref	(defined at #)
+
+DGROUP			Group				   #28	28  66
+  STACK			16  0200 Para	Stack	STACK	   #29
+  _DATA			16  00EA Word	Public	DATA	   #28	#32  #150
+swapproc_TEXT		16  00BA Word	Public	CODE	   #28	28  #59	 59  #170  170	#219  219
+

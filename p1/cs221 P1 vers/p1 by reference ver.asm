@@ -9,15 +9,18 @@ INCLUDELIB iofar
 	 .data
 Prompt1	 db  'Enter integers #$'
 Prompt2  db  ': $'
-arr1  dw  10 dup(0)     ; an unsorted array needs to be sorted, 10 items
-arr2  dw  10 dup(0)     ; copied version of arr1, 10 items
+arr1  dw  10 dup(0)     ; unsorted array, 10 items
+arr2  dw  10 dup(0)     ; sorted array, 10 items
 iNum dw  10             ; total number of items in the array
+i	 dw  1              ; i index for insertion sort
+j	 dw  ?              ; j index for insertion sort
+key  dw  ?              ; key index for insertion sort
 Count	 dw  1          ; input counter
 MsgEcho  db  'The input was:$'
 MsgUnsorted	 db  'Unsorted List $'
 MsgSorted	 db  'Sorted List $'
-Space1    db ' $'       ; for the use of format adjustment
-Space2    db '       $' ; for the use of format adjustment
+Space1    db ' $' ; ⚠️ 注意加$号！
+Space2    db '       $'
 
 ;****** MAIN PROGRAM ️CODE SEGMENT *****************************
 	.code
@@ -31,7 +34,7 @@ ProgramStart   PROC
 	mov	ds,ax
 
 ; Call procedure Greet to print introductory messages to the user
-	call	Greet        	; call subroutine to print greeting
+	call	Greet        ; call subroutine to print greeting
 
 ; Print prompt message to the user
 	mov	dx,OFFSET Prompt1   ; let DS register point to the Prompt1's address
@@ -50,7 +53,7 @@ ProgramStart   PROC
 ; Input an integer from the user keyboard and assign it to arr[]
 	call    GetDec         ; integer from keyboard returned in ax (only integers are accepted)
 	sub si,si
-	mov [arr1+si],ax       ; store input value in array location
+	mov [arr1+si],ax           ; store input value in array location
 
 ; Print for Verification
   ; Print message
@@ -59,7 +62,7 @@ ProgramStart   PROC
 	int	21h	               ; print string
   ; Print the input integer
 	mov	ax,[arr1+si]         ; put parameter for subroutine PutDec in ax
-	call	PutDec           ; print the decimal integer in ax
+	call	PutDec            ; print the decimal integer in ax
 	call    PutCrLf
 	call    PutCrLf
 
@@ -73,20 +76,20 @@ WHILE01:	;  Count < total item number of the array
 	jnle	ENDWHL01    ; if >
 DO01:       ; Input integer, print it
    ; Print prompt message to the user
-	mov	dx,OFFSET Prompt1   ; point to the Prompt mesg
-	mov	ah,9	            ; DOS print string function #
-	int	21h	                ; print string
+	mov	dx,OFFSET Prompt1  ; point to the Prompt mesg
+	mov	ah,9	     ; DOS print string function #
+	int	21h	     ; print string
    ; Print the Count value as part of prompt
-	mov	ax,Count            ; put parameter for subroutine PutDec in ax
-	call	PutDec          ; print the decimal integer in ax
+	mov	ax,Count     ; put parameter for subroutine PutDec in ax
+	call	PutDec       ; print the decimal integer in ax
    ; Finish the prompt string
-	mov	dx,OFFSET Prompt2   ; point to the Prompt mesg
-	mov	ah,9	            ; DOS print string function #
-	int	21h	                ; print string
+	mov	dx,OFFSET Prompt2  ; point to the Prompt mesg
+	mov	ah,9	     ; DOS print string function #
+	int	21h	     ; print string
 
   ; Input an integer from the user keyboard and assign it to N
 	call	GetDec          ; integer from keyboard returned in ax
-	mov [arr1+si],ax        ; store input value in array location
+	mov [arr1+si],ax          ; store input value in array location
 
 ; Print for Verification
 	mov	dx,OFFSET MsgEcho   ; point to the output mesg
@@ -94,7 +97,7 @@ DO01:       ; Input integer, print it
 	int	21h	                ; print string
 
   ; Print the input integer
-	mov	ax,[arr1+si]        ; put parameter for subroutine PutDec in ax
+	mov	ax,[arr1+si]             ; put parameter for subroutine PutDec in ax
 	call	PutDec          ; print the decimal integer in ax
 	call    PutCrLf
 	call    PutCrLf
@@ -107,19 +110,20 @@ DO01:       ; Input integer, print it
 ENDWHL01:
     nop
 
-; Copy arr1 into arr2 for printing unsorted version later:
+; copy arr1 into arr2 for printing unsorted version later:
     sub si,si    ; initialize array index
     mov cx,iNum  ; loop for 10 times
 S0:
-    push [arr1+si] ; copying arr1[si] into arr2[si]
+    push [arr1+si]
     pop  [arr2+si]
-    add si,2       ; increase the index(word type)
+    add si,2    ; ⚠️ 容易忽略！
     loop S0
 
-; InsertSort(iNum,arr1)
+; push number of items in the array onto stack
+; and push array address onto stack
     push iNum           ; push number of items in arr1
-	push OFFSET arr1    ; push arr1 address
-    call    InsertSort  ; Sort arr1
+    push OFFSET arr1    ; push arr1 address
+    call    InsertSort  ; InsertSort(iNum,arr1)
 
 ; Print label at the top of each column
 	mov	dx,OFFSET MsgUnsorted ; set pointer to MsgUnsorted message
@@ -133,7 +137,7 @@ S0:
 
 ; Print arr1 and arr2
     sub si,si    ; initialize si
-    mov cx,iNum  ; loop time for printing items in array
+    mov cx,iNum ; loop time for printing items in array
 S1:
     ; Print whitespace(adjust format)
 	mov	dx,OFFSET Space1
@@ -161,7 +165,7 @@ ProgramStart	ENDP
 comment |
 ******* PROCEDURE HEADER **************************************
   PROCEDURE NAME : InsertSort
-  PURPOSE :  To sort 10 integers using Insertion Sort in Ascending Order
+  PURPOSE :  To sort 10 integers using insertion sort
 	        Returns: None
   INPUT PARAMETERS
             pass by value, number of items in an array
@@ -184,13 +188,13 @@ InsertSort PROC    near
     ; bp + 6: the number of items in the array
     ; bp + 4: array
 
-    ; setting CX as the actual size of the array
-    mov ax,[bp+6] ; setting ax = 10
+    ; setting CX as the actual size of the array ⚠️ 容易忽略
+    mov ax,[bp+6]  ; setting ax = 10
     mov cx,2       ; 2 byte per word
     mul cx
     mov cx,ax
 
-    ; 'i' and 'j' increase by 2 due to word size
+    ; 'i' and 'j' increase by 2 due to word size. ⚠️ 容易忽略
     mov si,2       ; SI is i and i = 2
     sub di,di      ; DI is j, setting it to 0
     mov bx,[bp+4]  ; copy address of arr1 into BX, BX is the array now.
@@ -204,7 +208,7 @@ InsertSort PROC    near
 
     mov di,si
     sub di,2    ; bx is j = i - 1
-    add si,2    ; i++ 
+    add si,2    ; i++
 
     push ax     ; need to use ax in inner loop, store first
 ; Inner loop begins here:
@@ -216,14 +220,14 @@ INLOOP:	    ; (j >= 0 && arr[j] > key)
     jle ENDINLOOP
 
     mov ax,[bx+di] ; arr[j + 1] = arr [j]
-    mov [bx+di+2],ax ;
+    mov [bx+di+2],ax
 
     sub di,2   ; j--
 
     jmp INLOOP ; loop back to INLOOP
 
 ENDINLOOP:
-    mov [bx+di+2],dx ; array[j+1] = key ;
+    mov [bx+di+2],dx ; array[j+1] = key
     pop ax  ; restore ax before outter loop begins
     jmp OUTLOOP ; back to Outter Loop
 
@@ -234,9 +238,7 @@ ENDOUTLOOP:
     pop si
     pop bx
     pop bp
-; restore the remaining elements(iNum, array address)
-	ret     4
-
+	ret
 InsertSort ENDP
 
 comment |
@@ -253,9 +255,9 @@ comment |
 |
 ;****** SUBROUTINE DATA SEGMENT ********************************
 	.data
-Msgg1	 db  'Program:    Insortion Sort for Ten Integers in Ascending Order $'
+Msgg1	 db  'Program:    Insortion Sort for Ten Integers $'
 Msgg2	 db  'Programmer: Jian Zhong $'
-Msgg3	 db  'Date:       March 29, 2020 $'
+Msgg3	 db  'Date:       March 24, 2020 $'
 
 ;****** SUBROUTINE CODE SEGMENT ********************************
 	.code
@@ -295,3 +297,4 @@ Greet	PROC    near
 	ret
 Greet	ENDP
 	end	ProgramStart
+

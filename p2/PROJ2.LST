@@ -1,0 +1,522 @@
+Turbo Assembler	 Version 3.1	    04/26/20 15:09:04	    Page 1
+c:proj2.asm
+
+
+
+      1				     comment |
+      2				     ***************************************************************
+      3				     Programmer:  Jian Zhong
+      4				     Date      :  Apr 7th, 2020
+      5				     Course    :  CS221	- Machine Organization & Assembly Lang.	Programming
+      6				     Project   :  This program uses a recursive	procedure to
+      7					      solve The	towers of Hanoi	puzle.
+      8				     Assembler :  Borland TASM 3.0
+      9				     File Name :  proj2.asm
+     10
+     11				     PROGRAM IDENTIFICATION SECTION:
+     12				       Input  :	 The number of disks
+     13						 The number of starting	pole
+     14						 The number of final pole
+     15				       Output :	 None
+     16				       Input  :	 None
+     17				       Output :	 None
+     18				       Purpose:	 To specify the	steps required to move the disks, after	num is input by	the user.
+     19
+     20				     PROCEDURES	CALLED:
+     21					 External procedures called:
+     22					 FROM iofar.lib: PutStr, PutCrLf, GetDec, PutDec
+     23					 Internal procedures called:
+     24					 Greet,	H
+     25				     |
+     26
+     27				     ;****** BEGIN MAIN	PROGRAM	************************************
+     28					 DOSSEG
+     29					 .186
+     30	0000				 .model	large
+     31	0000				 .stack	200h
+     32
+     33				     ;****** MAIN PROGRAM DATA SEGMENT *****************************
+     34	0000				  .data
+     35	0000  54 68 65 20 64 69	73+  PromptDisk	    db	'The disk # for	your Tower(3-7): $'
+     36	      6B 20 23 20 66 6F	72+
+     37	      20 79 6F 75 72 20	54+
+     38	      6F 77 65 72 28 33	2D+
+     39	      37 29 3A 20 24
+     40	0021  54 68 65 20 53 74	61+  PromptStartP   db	'The Starting Pole #(1-3): $'
+     41	      72 74 69 6E 67 20	50+
+     42	      6F 6C 65 20 23 28	31+
+     43	      2D 33 29 3A 20 24
+     44	003C  54 68 65 20 45 6E	64+  PromptEndP	    db	'The Ending Pole #(1-3): $'
+     45	      69 6E 67 20 50 6F	6C+
+     46	      65 20 23 28 31 2D	33+
+     47	      29 3A 20 24
+     48	0055  2A 2A 2A 20 49 6E	70+  PromptEcho1    db	'*** Input should be FROM 3 TO 7 ***, please try again:	$'
+     49	      75 74 20 73 68 6F	75+
+     50	      6C 64 20 62 65 20	46+
+     51	      52 4F 4D 20 33 20	54+
+     52	      4F 20 37 20 2A 2A	2A+
+     53	      2C 20 70 6C 65 61	73+
+     54	      65 20 74 72 79 20	61+
+     55	      67 61 69 6E 3A 20	24
+     56	008D  2A 2A 2A 20 49 6E	70+  PromptEcho2    db	'*** Input should be FROM 1 TO 3 ***, please try again:	$'
+     57	      75 74 20 73 68 6F	75+
+Turbo Assembler	 Version 3.1	    04/26/20 15:09:04	    Page 2
+c:proj2.asm
+
+
+
+     58	      6C 64 20 62 65 20	46+
+     59	      52 4F 4D 20 31 20	54+
+     60	      4F 20 33 20 2A 2A	2A+
+     61	      2C 20 70 6C 65 61	73+
+     62	      65 20 74 72 79 20	61+
+     63	      67 61 69 6E 3A 20	24
+     64	00C5  2A 2A 2A 20 54 68	65+  PromptEcho3    db	'*** The Two Pole # must NOT be	the same ***, please try again:	$'
+     65	      20 54 77 6F 20 50	6F+
+     66	      6C 65 20 23 20 6D	75+
+     67	      73 74 20 4E 4F 54	20+
+     68	      62 65 20 74 68 65	20+
+     69	      73 61 6D 65 20 2A	2A+
+     70	      2A 2C 20 70 6C 65	61+
+     71	      73 65 20 74 72 79	20+
+     72	      61 67 61 69 6E 3A	20+
+     73	      24
+     74	0105  0000		     counter	dw  0 ;	The counter of step
+     75	0107  ????		     num	dw  ? ;	The number of disks, 3 ≤ num ≤ 7
+     76	0109  ????		     pStart	dw  ? ;	The starting pole #, 1 ≤ pStart ≤ 3
+     77	010B  ????		     pFinal	dw  ? ;	The ending pole	#, 1 ≤ pFinal	≤ 3
+     78
+     79				     ;****** MAIN PROGRAM CODE SEGMENT *****************************
+     80	010D				 .code
+     81					 extrn	  PutCrLf: PROC
+     82					 extrn	  GetDec: PROC,	PutDec:	PROC
+     83
+     84	0000			     ProgramStart   PROC  NEAR
+     85				     ; Initialize ds register to hold data segment address
+     86	0000  B8 0000s			 mov ax,@data
+     87	0003  8E D8			 mov ds,ax
+     88
+     89				     ; call subroutine to print	a greeting to the user
+     90	0005  E8 0181			 call	 Greet	; void Greet();
+     91
+     92				     ; cout << "The disk # for your Tower(3-7):	";
+     93	0008			     WHILE01:
+     94	0008  BA 0000r			 mov dx,OFFSET PromptDisk    ; point to	the PromptDisk mesg
+     95	000B  B4 09			 mov ah,9		     ; DOS print string	function #
+     96	000D  CD 21			 int 21h		     ; print string
+     97					 ; get input integer from user for "num" parameter
+     98	000F  0E E8 0000e		 call	 far ptr GetDec	     ; get integer from	keyboard, return in ax
+     99	0013  0E E8 0000e		 call	 far ptr PutCrLf     ; /n
+    100	0017  A3 0107r			 mov num,ax		     ; store user input	in num
+    101
+    102				     ; while (num < 3 || num > 7)
+    103	001A  83 3E 0107r 03		 cmp num, 3
+    104	001F  7C 0A			 jl	 Try_Again01 ; if num <	3
+    105	0021  83 3E 0107r 07		 cmp num, 7
+    106	0026  7F 03			 jg	 Try_Again01 ; if num >	7
+    107	0028  EB 0E 90			 jmp	 ENDWHILE01; valid input, jump out
+    108
+    109					 ; if invalid input: prompt the	user
+    110	002B			     Try_Again01:
+    111	002B  BA 0055r			 mov dx,OFFSET PromptEcho1    ;	set pointer to PromptEcho1 mesg
+    112	002E  B4 09			 mov ah,9		      ;	DOS print string function #
+    113	0030  CD 21			 int 21h		      ;	print string
+    114	0032  0E E8 0000e		 call	 PutCrLf
+Turbo Assembler	 Version 3.1	    04/26/20 15:09:04	    Page 3
+c:proj2.asm
+
+
+
+    115	0036  EB D0			 jmp	 WHILE01
+    116	0038  90		     ENDWHILE01: nop	 ; End of WHILE01 LOOP
+    117
+    118				     ; cout << "The Starting pole #(1-3): ";
+    119	0039			     WHILE02:
+    120	0039  BA 0021r			 mov dx,OFFSET PromptStartP  ; point to	the PromptStartP mesg
+    121	003C  B4 09			 mov ah,9		     ; DOS print string	function #
+    122	003E  CD 21			 int 21h		     ; print string
+    123					 ; get input integer from user for "pStart" parameter
+    124	0040  0E E8 0000e		 call	 far ptr GetDec	     ; get integer from	keyboard, return in ax
+    125	0044  0E E8 0000e		 call	 far ptr PutCrLf     ; /n
+    126	0048  A3 0109r			 mov pStart,ax		     ; store user input	in pStart
+    127
+    128				     ; while (pStart < 1 || pStart > 3)
+    129	004B  83 3E 0109r 01		 cmp pStart, 1
+    130	0050  7C 0A			 jl	 Try_Again02 ; if pStart < 1
+    131	0052  83 3E 0109r 03		 cmp pStart, 3
+    132	0057  7F 03			 jg	 Try_Again02 ; if pStart > 3
+    133	0059  EB 0E 90			 jmp	 ENDWHILE02  ; valid input, jump out
+    134
+    135					 ; if invalid input: prompt the	user
+    136	005C			     Try_Again02:
+    137	005C  BA 008Dr			 mov dx,OFFSET PromptEcho2    ;	set pointer to PromptEcho2 mesg
+    138	005F  B4 09			 mov ah,9		      ;	DOS print string function #
+    139	0061  CD 21			 int 21h		      ;	print string
+    140	0063  0E E8 0000e		 call	 PutCrLf
+    141	0067  EB D0			 jmp	 WHILE02
+    142	0069  90		     ENDWHILE02: nop ; end of WHILE02 LOOP
+    143
+    144				     ; cout << "The Ending Pole	#(1-3):	";
+    145	006A			     WHILE03:
+    146	006A  BA 003Cr			 mov dx,OFFSET PromptEndP  ; point to the PromptStartP mesg
+    147	006D  B4 09			 mov ah,9		     ; DOS print string	function #
+    148	006F  CD 21			 int 21h		     ; print string
+    149					 ; get input integer from user for "pFinal" parameter
+    150	0071  0E E8 0000e		 call	 far ptr GetDec	     ; get integer from	keyboard, return in ax
+    151	0075  0E E8 0000e		 call	 far ptr PutCrLf     ; /n
+    152	0079  A3 010Br			 mov pFinal,ax		     ; store user input	in pFinal
+    153
+    154				     ; while (pFinal < 1 || pFinal > 3)
+    155	007C  83 3E 010Br 01		 cmp pFinal, 1
+    156	0081  7C 13			 jl	 Try_Again03 ; if pFinal < 1
+    157	0083  83 3E 010Br 03		 cmp pFinal, 3
+    158	0088  7F 0C			 jg	 Try_Again03 ; if pFinal > 3
+    159	008A  A1 0109r			 mov ax,pStart
+    160	008D  39 06 010Br		 cmp pFinal, ax
+    161	0091  74 03			 je	 Try_Again03 ; if pFinal == pStart
+    162
+    163	0093  EB 1D 90			 jmp	 ENDWHILE03  ; valid input, jump out
+    164
+    165					 ; if invalid input: prompt the	user
+    166	0096			     Try_Again03:
+    167	0096  74 0D			 je	 IF03 ;	if (pFinal < 1 || pFinal > 3), prompt PromptEcho2 mesg
+    168	0098  BA 008Dr			 mov dx,OFFSET PromptEcho2    ;	set pointer to PromptEcho2 mesg
+    169	009B  B4 09			 mov ah,9		      ;	DOS print string function #
+    170	009D  CD 21			 int 21h		      ;	print string
+    171	009F  0E E8 0000e		 call	 PutCrLf
+Turbo Assembler	 Version 3.1	    04/26/20 15:09:04	    Page 4
+c:proj2.asm
+
+
+
+    172	00A3  EB C5			 jmp	 WHILE03
+    173
+    174	00A5			     IF03:	      ;	if (pFinal == pStart), prompt PromptEcho3 mesg
+    175	00A5  BA 00C5r			 mov dx,OFFSET PromptEcho3    ;	set pointer to PromptEcho3 mesg
+    176	00A8  B4 09			 mov ah,9		      ;	DOS print string function #
+    177	00AA  CD 21			 int 21h		      ;	print string
+    178	00AC  0E E8 0000e		 call	 PutCrLf
+    179	00B0  EB B8			 jmp	 WHILE03
+    180	00B2  90		     ENDWHILE03: nop ; end of WHILE03 LOOP
+    181
+    182				     ; H(counter, num, pStart, pFinal);
+    183	00B3  68 0105r			 push	 OFFSET	counter	     ; push Counter by Reference
+    184	00B6  FF 36 0107r		 push	 num		     ; push num	by Value
+    185	00BA  FF 36 0109r		 push	 pStart		     ; push pStart by Value
+    186	00BE  FF 36 010Br		 push	 pFinal		     ; push pFinal by Value
+    187	00C2  E8 0004			 call	 H		     ; Function	call
+    188
+    189	00C5  B4 4C			 mov	ah,4ch	  ; DOS	terminate program fn #
+    190	00C7  CD 21			 int	21h
+    191	00C9			     ProgramStart    ENDP ; end	of main	program
+    192
+    193				     comment |
+    194				     ******* PROCEDURE HEADER **************************************
+    195				       PROCEDURE NAME :	H
+    196				       PURPOSE :  Compute and specify the steps	required to move the disks, after n is input by	the +
+    197				     user.
+    198					      Print movments message and counter++ if n	== 1
+    199					      This procedure uses a recursive algorithm.
+    200				       INPUT PARAMETERS	:
+    201					      Pass by reference	parameter - counter ; counter of steps
+    202					      Pass by value parameter	  - n	    ; The number of disks
+    203					      Pass by value parameter	  - s	    ; The starting pole	#
+    204					      Pass by value parameter	  - f	    ; The starting pole	#
+    205				       OUTPUT PARAMETERS: None
+    206				       NON-LOCAL VARIABLES REFERENCED: None
+    207				       NON-LOCAL VARIABLES MODIFIED :  None
+    208				       PROCEDURES CALLED :
+    209					 FROM iofar.lib: PutCrLf, GetDec
+    210				       CALLED FROM : Main Program and H	Procedure
+    211				     |
+    212				     ;****** SUBROUTINE	DATA SEGMENT ********************************
+    213	00C9				 .data
+    214	010D  3A 20 4D 6F 76 65	20+  Annouce1	  db  ': Move disk$'
+    215	      64 69 73 6B 24
+    216	0119  20 20 20 20 20 66	72+  Annouce2	  db  '	    from pole #$'
+    217	      6F 6D 20 70 6F 6C	65+
+    218	      20 23 24
+    219	012A  20 20 20 20 20 74	6F+  Annouce3	  db  '	    to pole #$'
+    220	      20 70 6F 6C 65 20	23+
+    221	      24
+    222
+    223				     ;****** SUBROUTINE	CODE SEGMENT ********************************
+    224	0139				 .code
+    225	00C9			     H PROC    NEAR
+    226	00C9  60			 pusha
+    227	00CA  9C			 pushf
+    228	00CB  8B EC			 mov	 bp, sp
+Turbo Assembler	 Version 3.1	    04/26/20 15:09:04	    Page 5
+c:proj2.asm
+
+
+
+    229
+    230				     ; IF01 n == 1
+    231	00CD  8B 4E 18			 mov cx,[bp+24]	; store	n in cx
+    232	00D0  83 F9 01			 cmp	 cx,1
+    233	00D3  75 42			 jne	 ELSE01	; Recursive Case(jump if n != 1)
+    234
+    235				     ; n == 1, then Counter++;
+    236	00D5  8B 5E 1A			 mov bx,[bp+26]	; bx is	the offset of counter
+    237	00D8  8B 07			 mov ax,[bx]	; ax is	the content of counter
+    238	00DA  40			 inc ax		; increase ax by 1
+    239	00DB  89 07			 mov [bx],ax	; copy ax to counter
+    240
+    241				     ; Print (Counter, “. Move disk “, n, “ from pole “, s, “	to pole	“, f)
+    242				     ; Print Counter parameter
+    243	00DD  8B 5E 1A			 mov bx,[bp+26]	 ; Counter's address is	in [bp+26]
+    244	00E0  8B 07			 mov ax,[bx]	 ; copy	counter	into ax
+    245	00E2  0E E8 0000e		 call	 PutDec	 ; print integer in ax
+    246				     ; Pinrt “: Move disk “
+    247	00E6  BA 010Dr			 mov dx,OFFSET Annouce1	; set pointer to Annouce1 message
+    248	00E9  B4 09			 mov ah,9		; DOS print string function #
+    249	00EB  CD 21			 int 21h		; print	string
+    250				     ; Print n parameter
+    251	00ED  8B 46 18			 mov ax, [bp+24] ; n is	in [bp+24]
+    252	00F0  0E E8 0000e		 call	 PutDec	 ; print integer in ax
+    253				     ; Print “ from pole “
+    254	00F4  BA 0119r			 mov dx,OFFSET Annouce2	; set pointer to Annouce2 message
+    255	00F7  B4 09			 mov ah,9		; DOS print string function #
+    256	00F9  CD 21			 int 21h		; print	string
+    257				     ; Print s parameter
+    258	00FB  8B 46 16			 mov ax, [bp+22] ; s is	in [bp+22]
+    259	00FE  0E E8 0000e		 call	 PutDec	 ; print integer in ax
+    260				     ; Print “ to pole "
+    261	0102  BA 012Ar			 mov dx,OFFSET Annouce3	; set pointer to Annouce3 message
+    262	0105  B4 09			 mov ah,9		; DOS print string function #
+    263	0107  CD 21			 int 21h		; print	string
+    264				     ; Print f parameter
+    265	0109  8B 46 14			 mov ax, [bp+20] ; f is	in [bp+20]
+    266	010C  0E E8 0000e		 call	 PutDec	 ; print integer in ax
+    267	0110  0E E8 0000e		 call	 PutCrLf ; /n
+    268
+    269				     ; End of IF01
+    270	0114  EB 6D 90			 jmp	 ENDIF01 ; Base	case (num == 1):
+    271
+    272	0117			     ELSE01:
+    273				     ; Find 6 -	s - f:
+    274	0117  8B 46 16			 mov ax,[bp+22]
+    275	011A  F7 D8			 neg ax	       ; ax is -s
+    276	011C  8B 56 14			 mov dx,[bp+20]
+    277	011F  F7 DA			 neg dx	       ; dx is -f
+    278	0121  05 0006			 add ax,6
+    279	0124  03 C2			 add ax,dx     ; AX is 6 - s - f now
+    280
+    281				     ; Find n -	1:
+    282	0126  8B 56 18			 mov dx,[bp+24]
+    283	0129  4A			 dec dx	       ; DX is n-1 now
+    284
+    285				     ; H(counter, n - 1, s, 6 -	s - f);
+Turbo Assembler	 Version 3.1	    04/26/20 15:09:04	    Page 6
+c:proj2.asm
+
+
+
+    286	012A  FF 76 1A			 push	 [bp+26]     ; pass counter by reference
+    287	012D  52			 push	 dx	     ; pass n -	1
+    288	012E  FF 76 16			 push	 [bp+22]     ; pass s
+    289	0131  50			 push	 ax	     ; pass 6 -	s - f
+    290	0132  E8 FF94			 call	 H	     ; call H procedure
+    291
+    292				     ; Store 6 - s - f and n - 1 for later Caller
+    293	0135  50			 push ax ; store 6 - s - f in ax
+    294	0136  52			 push dx ; store n - 1 in dx
+    295
+    296				     ; n == 1, then Counter++;
+    297	0137  8B 5E 1A			 mov bx,[bp+26]	; bx is	the offset of counter
+    298	013A  8B 07			 mov ax,[bx]	; ax is	the content of counter
+    299	013C  40			 inc ax		; increase ax by 1
+    300	013D  89 07			 mov [bx],ax	; copy ax to counter
+    301
+    302				     ; Print (Counter, “. Move disk “, n, “ from pole “, s, “	to pole	“, f)
+    303				     ; Print Counter parameter
+    304	013F  8B 5E 1A			 mov bx,[bp+26]		 ; Counter's address is	in [bp+26]
+    305	0142  8B 07			 mov ax,[bx]		 ; copy	counter	into ax
+    306	0144  0E E8 0000e		 call	 PutDec		 ; print integer in ax
+    307				     ; Pinrt “: Move disk “
+    308	0148  BA 010Dr			 mov dx,OFFSET Annouce1	 ; set pointer to Annouce1 message
+    309	014B  B4 09			 mov ah,9		 ; DOS print string function #
+    310	014D  CD 21			 int 21h		 ; print string
+    311				     ; Print n parameter
+    312	014F  8B 46 18			 mov ax, [bp+24] ; n is	in [bp+24]
+    313	0152  0E E8 0000e		 call	 PutDec	 ; print integer in ax
+    314				     ; Print “ from pole “
+    315	0156  BA 0119r			 mov dx,OFFSET Annouce2	; set pointer to Annouce2 message
+    316	0159  B4 09			 mov ah,9		; DOS print string function #
+    317	015B  CD 21			 int 21h		; print	string
+    318				     ; Print s parameter
+    319	015D  8B 46 16			 mov ax, [bp+22] ; s is	in [bp+22]
+    320	0160  0E E8 0000e		 call	 PutDec	 ; print integer in ax
+    321				     ; Print “ to pole "
+    322	0164  BA 012Ar			 mov dx,OFFSET Annouce3	; set pointer to Annouce3 message
+    323	0167  B4 09			 mov ah,9		; DOS print string function #
+    324	0169  CD 21			 int 21h		; print	string
+    325				     ; Print f parameter
+    326	016B  8B 46 14			 mov ax, [bp+20]	; f is in [bp+20]
+    327	016E  0E E8 0000e		 call	 PutDec		; print	integer	in ax
+    328	0172  0E E8 0000e		 call	 PutCrLf	; /n
+    329
+    330				     ; Restore 6 - s - f and n - 1 for H(counter, n - 1, 6 - s - f, f)
+    331	0176  5A			 pop dx	 ; restore n - 1 in dx
+    332	0177  58			 pop ax	 ; restore 6 - s - f in	ax
+    333
+    334				     ; H(counter, n - 1, 6 - s - f, f);
+    335	0178  FF 76 1A			 push	 [bp+26]     ; pass counter by reference
+    336	017B  52			 push	 dx	     ; pass n -	1
+    337	017C  50			 push	 ax	     ; pass 6 -	s - f
+    338	017D  FF 76 14			 push	 [bp+20]     ; pass f
+    339	0180  E8 FF46			 call	 H	     ; call H procedure
+    340	0183  90		     ENDIF01: nop  ; End IF01
+    341
+    342				     ;Restore registers	and return having passed the result back
+Turbo Assembler	 Version 3.1	    04/26/20 15:09:04	    Page 7
+c:proj2.asm
+
+
+
+    343	0184  9D			 popf
+    344	0185  61			 popa
+    345				     ; Return to caller	module
+    346	0186  C2 0008			 ret	8 ; clean 8 words(4 vars were pushed before Caller)
+    347	0189			     H ENDP	  ; End	of H procedure
+    348
+    349				     comment |
+    350				     ******* PROCEDURE HEADER **************************************
+    351				       PROCEDURE NAME :	Greet
+    352				       PURPOSE :  To print an initial greeting to the user
+    353				       INPUT PARAMETERS	: None
+    354				       OUTPUT PARAMETERS or RETURN VALUE:  None
+    355				       NON-LOCAL VARIABLES REFERENCED: None
+    356				       NON-LOCAL VARIABLES MODIFIED :None
+    357				       PROCEDURES CALLED :
+    358					 FROM iofar.lib: PutStr, PutCrLf
+    359				       CALLED FROM : main program
+    360				     |
+    361				     ;****** SUBROUTINE	DATA SEGMENT ********************************
+    362	0189				  .data
+    363	0139  20 20 20 20 57 65	6C+  Msgg1     db  '	Welcome	to the Tower of	Hanoi Puzzle Solving Program!$'
+    364	      63 6F 6D 65 20 74	6F+
+    365	      20 74 68 65 20 54	6F+
+    366	      77 65 72 20 6F 66	20+
+    367	      48 61 6E 6F 69 20	50+
+    368	      75 7A 7A 6C 65 20	53+
+    369	      6F 6C 76 69 6E 67	20+
+    370	      50 72 6F 67 72 61	6D+
+    371	      21 24
+    372	0173  20 20 20 20 50 72	6F+  Msgg2     db  '	Programmer: Jian Zhong $'
+    373	      67 72 61 6D 6D 65	72+
+    374	      3A 20 4A 69 61 6E	20+
+    375	      5A 68 6F 6E 67 20	24
+    376	018F  20 20 20 20 44 61	74+  Msgg3     db  '	Date:  7th Apr,	2020 $'
+    377	      65 3A 20 20 37 74	68+
+    378	      20 41 70 72 2C 20	32+
+    379	      30 32 30 20 24
+    380
+    381				     ;****** SUBROUTINE	CODE SEGMENT ********************************
+    382	01A9				 .code
+    383	0189				 Greet	  PROC	  near ;
+    384
+    385				     ; Save registers on the stack
+    386	0189  60			 pusha
+    387	018A  9C			 pushf
+    388				     ; Print name of program
+    389	018B  BA 0139r			 mov dx,OFFSET Msgg1 ; set pointer to 1st greeting message
+    390	018E  B4 09			 mov ah,9	     ; DOS print string	function #
+    391	0190  CD 21			 int 21h	     ; print string
+    392	0192  0E E8 0000e		 call	 PutCrLf
+    393				     ; Print name of programmer
+    394	0196  BA 0173r			 mov dx,OFFSET Msgg2 ; set pointer to 2nd greeting message
+    395	0199  B4 09			 mov ah,9	     ; DOS print string	function #
+    396	019B  CD 21			 int 21h	     ; print string
+    397	019D  0E E8 0000e		 call	 PutCrLf
+    398				     ; Print date
+    399	01A1  BA 018Fr			 mov dx,OFFSET Msgg3 ; set pointer to 3rd greeting message
+Turbo Assembler	 Version 3.1	    04/26/20 15:09:04	    Page 8
+c:proj2.asm
+
+
+
+    400	01A4  B4 09			 mov ah,9	     ; DOS print string	function #
+    401	01A6  CD 21			 int 21h	     ; print string
+    402	01A8  0E E8 0000e		 call	 PutCrLf
+    403	01AC  0E E8 0000e		 call	 PutCrLf
+    404				     ; Restore registers from stack
+    405	01B0  9D			 popf
+    406	01B1  61			 popa
+    407				     ; Return to caller	module
+    408	01B2  C3			 ret
+    409	01B3				 Greet	  ENDP ; End Greet procedure
+    410
+    411				     end    ProgramStart ; End of Entire Program
+Turbo Assembler	 Version 3.1	    04/26/20 15:09:04	    Page 9
+Symbol Table
+
+
+
+
+Symbol Name		Type   Value			   Cref	(defined at #)
+
+??date			Text   "04/26/20"
+??filename		Text   "proj2	"
+??time			Text   "15:09:04"
+??version		Number 030A
+@32Bit			Text   0			   #30
+@CodeSize		Text   1			   #30
+@Cpu			Text   0103H			   #29
+@DataSize		Text   1			   #30
+@FileName		Text   proj2
+@Interface		Text   00h			   #30
+@Model			Text   5			   #30
+@WordSize		Text   2			   #29	#34  #80  #213	#224  #362  #382
+@code			Text   proj2_TEXT		   #30	#30  #80  #224	#382
+@curseg			Text   proj2_TEXT		   #34	#80  #213  #224	 #362  #382
+@data			Text   DGROUP			   #30	86
+@stack			Text   DGROUP			   #30
+Annouce1		Byte   DGROUP:010D		   #214	 247  308
+Annouce2		Byte   DGROUP:0119		   #216	 254  315
+Annouce3		Byte   DGROUP:012A		   #219	 261  322
+ELSE01			Near   proj2_TEXT:0117		   233	#272
+ENDIF01			Near   proj2_TEXT:0183		   270	#340
+ENDWHILE01		Near   proj2_TEXT:0038		   107	#116
+ENDWHILE02		Near   proj2_TEXT:0069		   133	#142
+ENDWHILE03		Near   proj2_TEXT:00B2		   163	#180
+GetDec			Far    proj2_TEXT:---- Extern	   #82	98  124	 150
+Greet			Near   proj2_TEXT:0189		   90  #383
+H			Near   proj2_TEXT:00C9		   187	#225  290  339
+IF03			Near   proj2_TEXT:00A5		   167	#174
+Msgg1			Byte   DGROUP:0139		   #363	 389
+Msgg2			Byte   DGROUP:0173		   #372	 394
+Msgg3			Byte   DGROUP:018F		   #376	 399
+ProgramStart		Near   proj2_TEXT:0000		   #84	411
+PromptDisk		Byte   DGROUP:0000		   #35	94
+PromptEcho1		Byte   DGROUP:0055		   #48	111
+PromptEcho2		Byte   DGROUP:008D		   #56	137  168
+PromptEcho3		Byte   DGROUP:00C5		   #64	175
+PromptEndP		Byte   DGROUP:003C		   #44	146
+PromptStartP		Byte   DGROUP:0021		   #40	120
+PutCrLf			Far    proj2_TEXT:---- Extern	   #81	99  114	 125  140  151	171  178  267  328  392	 397  402  403
+PutDec			Far    proj2_TEXT:---- Extern	   #82	245  252  259  266  306	 313  320  327
+Try_Again01		Near   proj2_TEXT:002B		   104	106  #110
+Try_Again02		Near   proj2_TEXT:005C		   130	132  #136
+Try_Again03		Near   proj2_TEXT:0096		   156	158  161  #166
+WHILE01			Near   proj2_TEXT:0008		   #93	115
+WHILE02			Near   proj2_TEXT:0039		   #119	 141
+WHILE03			Near   proj2_TEXT:006A		   #145	 172  179
+counter			Word   DGROUP:0105		   #74	183
+num			Word   DGROUP:0107		   #75	100  103  105  184
+pFinal			Word   DGROUP:010B		   #77	152  155  157  160  186
+pStart			Word   DGROUP:0109		   #76	126  129  131  159  185
+Turbo Assembler	 Version 3.1	    04/26/20 15:09:04	    Page 10
+Symbol Table
+
+
+
+
+Groups & Segments	Bit Size Align	Combine	Class	   Cref	(defined at #)
+
+DGROUP			Group				   #30	30  86
+  STACK			16  0200 Para	Stack	STACK	   #31
+  _DATA			16  01A9 Word	Public	DATA	   #30	#34  #213  #362
+proj2_TEXT		16  01B3 Word	Public	CODE	   #30	30  #80	 80  #224  224	#382  382
+

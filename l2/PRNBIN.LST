@@ -1,0 +1,334 @@
+Turbo Assembler	 Version 3.1	    04/27/20 14:32:38	    Page 1
+c:PRNBIN.asm
+
+
+
+      1				     comment |
+      2				     ***************************************************************
+      3				     Programmer:
+      4				     Date      :  February 5, 2020
+      5				     Course    :  CS221	Machine	Organization & Assembly	Language Programming
+      6				     Project   :  ?? - Input an	integer	from the user, echo print the
+      7						       integer and print out the binary	representation.
+      8
+      9				     Assembler :  Borland TASM 3.0
+     10				     File Name :  PrnBin.asm
+     11
+     12				     Input   :	An integer.
+     13				     Output  :	The binary number system version of the	input number.
+     14
+     15				     Input Files : None
+     16				     Output Files: None
+     17
+     18
+     19				     PROCEDURES	CALLED:
+     20					 External procedures called:
+     21					     FROM iofar.lib: PutCrLf, GetDec, PutDec
+     22					 Internal procedures called:
+     23					     Greet, PrnBit
+     24
+     25				     |
+     26				     ;****** BEGIN MAIN	PROGRAM	************************************
+     27					     DOSSEG
+     28					     .186
+     29	0000				     .model large
+     30	0000				     .stack 200h
+     31
+     32				     ;****** MAIN PROGRAM DATA SEGMENT *****************************
+     33	0000				      .data
+     34	0000  45 6E 74 65 72 20	61+  Prompt1  db  'Enter an integer: $'
+     35	      6E 20 69 6E 74 65	67+
+     36	      65 72 3A 20 24
+     37	0013  ????		     N		  dw  ?
+     38	0015  0000		     Count    dw  0
+     39	0017  0010		     Limit    dw  16
+     40	0019  0001		     Mask1    dw  1
+     41	001B  54 68 65 20 69 6E	70+  MsgEcho  db  'The input number is:	$'
+     42	      75 74 20 6E 75 6D	62+
+     43	      65 72 20 69 73 3A	20+
+     44	      24
+     45	0031  54 68 65 20 62 69	6E+  MsgOut   db  'The binary version of the input number is: $'
+     46	      61 72 79 20 76 65	72+
+     47	      73 69 6F 6E 20 6F	66+
+     48	      20 74 68 65 20 69	6E+
+     49	      70 75 74 20 6E 75	6D+
+     50	      62 65 72 20 69 73	3A+
+     51	      20 24
+     52	005D  45 78 69 74 69 6E	67+  MsgEnd   db  'Exiting program $'
+     53	      20 70 72 6F 67 72	61+
+     54	      6D 20 24
+     55
+     56
+     57				     ;****** MAIN PROGRAM CODE SEGMENT *****************************
+Turbo Assembler	 Version 3.1	    04/27/20 14:32:38	    Page 2
+c:PRNBIN.asm
+
+
+
+     58	006E				     .code
+     59					     extrn   PutStr: PROC, PutCrLf: PROC
+     60					     extrn   GetDec: PROC, PutDec: PROC
+     61
+     62	0000			     ProgramStart   PROC
+     63				     ; Initialize ds register to hold data segment address
+     64	0000  B8 0000s			     mov     ax,@data
+     65	0003  8E D8			     mov     ds,ax
+     66
+     67				     ; Call procedure Greet to print introductory messages to the user
+     68	0005  E8 0068			     call    Greet	  ; call subroutine to print greeting
+     69
+     70				     ; Print prompt message to the user
+     71	0008  BA 0000r			     mov     dx,OFFSET Prompt1	; point	to the Prompt mesg
+     72	000B  B4 09			     mov     ah,9		; DOS print string function #
+     73	000D  CD 21			     int     21h		    ; print string
+     74
+     75				     ; Input an	integer	from the user keyboard and assign it to	N
+     76	000F  0E E8 0000e		     call    GetDec	  ; integer from keyboard returned in ax
+     77	0013  A3 0013r			     mov     N,ax	      ;	store input value in memory location
+     78
+     79
+     80				     ; Print to	verify the number was correctly	input
+     81				       ; Print message
+     82	0016  BA 001Br			     mov     dx,OFFSET MsgEcho	; point	to the output mesg
+     83	0019  B4 09			     mov     ah,9	  ; DOS	print string function #
+     84	001B  CD 21			     int     21h	      ;	print string
+     85
+     86				       ; Print the input integer
+     87	001D  A1 0013r			     mov     ax,N	      ;	put parameter for subroutine PutDec in ax
+     88	0020  0E E8 0000e		     call    PutDec	  ; print the decimal integer in ax
+     89	0024  0E E8 0000e		     call    PutCrLf
+     90	0028  0E E8 0000e		     call    PutCrLf
+     91
+     92				     ; Print result message
+     93	002C  BA 0031r			     mov     dx,OFFSET MsgOut  ; point to the output message
+     94	002F  B4 09			     mov     ah,9	       ; DOS print string function #
+     95	0031  CD 21			     int     21h		   ; print string
+     96	0033  0E E8 0000e		     call    PutCrLf
+     97
+     98				     ; While the Count is less than the	number of bits in the number,
+     99				     ; repeatedly get the number from location N, rotate left one bit
+    100				     ; extract the rightmost bit,print the one bit,& increment Count
+    101
+    102	0037			     WHILE01:		   ;  Count < Limit
+    103	0037  A1 0015r			     mov  ax, Count
+    104	003A  3B 06 0017r		     cmp  ax, Limit
+    105	003E  7D 15			     jnl  ENDWHL01
+    106	0040			     DO01:
+    107				       ; Copy N	into the ax register, rotate left to get the next bit
+    108				       ; positioned at right end of word, and save
+    109	0040  A1 0013r			     mov     ax,N	  ; fetch N
+    110	0043  D1 C0			     rol     ax,1	  ; rotate left
+    111	0045  A3 0013r			     mov     N,ax	  ; save in location N
+    112
+    113					; Extract one bit into ax
+    114	0048  23 06 0019r		     and     ax,Mask1
+Turbo Assembler	 Version 3.1	    04/27/20 14:32:38	    Page 3
+c:PRNBIN.asm
+
+
+
+    115
+    116					; Call procedure PrintBit to print one bit of the integer,
+    117					; passing the parameter	in the ax register
+    118	004C  E8 004B			     call    PrnBit	    ; print the	one bit
+    119
+    120					; Increment Count and repeat the loop
+    121	004F  FF 06 0015r		     inc     Count
+    122	0053  EB E2			     jmp     WHILE01
+    123				     ; End of while loop
+    124	0055			     ENDWHL01:
+    125
+    126				     ; Print ending message
+    127	0055  0E E8 0000e		     call    PutCrLf
+    128	0059  0E E8 0000e		     call    PutCrLf
+    129	005D  BA 005Dr			     mov     dx,OFFSET MsgEnd  ; point to the output mesg
+    130	0060  B4 09			     mov     ah,9	       ; DOS print string function #
+    131	0062  CD 21			     int     21h		   ; print string
+    132	0064  0E E8 0000e		     call    PutCrLf
+    133	0068  0E E8 0000e		     call    PutCrLf
+    134
+    135				     ; Exit to the operating system
+    136	006C  B4 4C			     mov     ah,4ch	       ; DOS terminate program fn #
+    137	006E  CD 21			     int     21h
+    138	0070			     ProgramStart    ENDP
+    139
+    140
+    141				     comment |
+    142				     ******* PROCEDURE HEADER **************************************
+    143				       PROCEDURE NAME :	Greet
+    144				       PURPOSE :  To print initial greeting messages to	the user
+    145				       INPUT PARAMETERS	: None
+    146				       OUTPUT PARAMETERS or RETURN VALUE:  None
+    147				       NON-LOCAL VARIABLES REFERENCED: None
+    148				       NON-LOCAL VARIABLES MODIFIED :None
+    149				       PROCEDURES CALLED :
+    150					     FROM iofar.lib: PutCrLf
+    151				       CALLED FROM : main program
+    152				     |
+    153				     ;****** SUBROUTINE	DATA SEGMENT ********************************
+    154	0070				     .data
+    155	006E  50 72 6F 67 72 61	6D+  Msgg1    db  'Program:  Binary number version display $'
+    156	      3A 20 20 42 69 6E	61+
+    157	      72 79 20 6E 75 6D	62+
+    158	      65 72 20 76 65 72	73+
+    159	      69 6F 6E 20 64 69	73+
+    160	      70 6C 61 79 20 24
+    161	0097  50 72 6F 67 72 61	6D+  Msgg2    db  'Programmer: XXXXXXXXXXXX $'
+    162	      6D 65 72 3A 20 58	58+
+    163	      58 58 58 58 58 58	58+
+    164	      58 58 58 20 24
+    165	00B1  44 61 74 65 3A 20	46+  Msgg3    db  'Date: February 5, 2020 $'
+    166	      65 62 72 75 61 72	79+
+    167	      20 35 2C 20 32 30	32+
+    168	      30 20 24
+    169
+    170
+    171				     ;****** SUBROUTINE	CODE SEGMENT ********************************
+Turbo Assembler	 Version 3.1	    04/27/20 14:32:38	    Page 4
+c:PRNBIN.asm
+
+
+
+    172	00C9				     .code
+    173	0070			     Greet   PROC    near
+    174
+    175				     ; Save registers on the stack
+    176	0070  60			     pusha
+    177	0071  9C			     pushf
+    178
+    179				     ; Print name of program
+    180	0072  BA 006Er			     mov     dx,OFFSET Msgg1 ; set pointer to 1st greeting message
+    181	0075  B4 09			     mov     ah,9	       ; DOS print string function #
+    182	0077  CD 21			     int     21h	       ; print string
+    183	0079  0E E8 0000e		     call    PutCrLf
+    184
+    185				     ; Print name of programmer
+    186	007D  BA 0097r			     mov     dx,OFFSET Msgg2	; set pointer to 2nd greeting message
+    187	0080  B4 09			     mov     ah,9		; DOS print string function #
+    188	0082  CD 21			     int     21h		    ; print string
+    189	0084  0E E8 0000e		     call    PutCrLf
+    190
+    191				     ; Print date
+    192	0088  BA 00B1r			     mov     dx,OFFSET Msgg3	; set pointer to 3rd greeting message
+    193	008B  B4 09			     mov     ah,9		; DOS print string function #
+    194	008D  CD 21			     int     21h		    ; print string
+    195	008F  0E E8 0000e		     call    PutCrLf
+    196	0093  0E E8 0000e		     call    PutCrLf
+    197
+    198				     ; Restore registers from stack
+    199	0097  9D			     popf
+    200	0098  61			     popa
+    201
+    202				     ; Return to caller	module
+    203	0099  C3			     ret
+    204	009A			     Greet   ENDP
+    205
+    206
+    207				     comment |
+    208				     ******* PROCEDURE HEADER **************************************
+    209				       PROCEDURE NAME :	PrnBit
+    210				       PURPOSE :  To print one bit to the user screen
+    211				       INPUT PARAMETERS	: A bit	in the ax register
+    212				       OUTPUT PARAMETERS or RETURN VALUE:  None
+    213				       NON-LOCAL VARIABLES REFERENCED: None
+    214				       NON-LOCAL VARIABLES MODIFIED :None
+    215				       PROCEDURES CALLED :
+    216					     FROM iofar.lib: PutCrLf
+    217				       CALLED FROM : main program
+    218				     |
+    219				     ;****** SUBROUTINE	DATA SEGMENT ********************************
+    220	009A				      .data
+    221	00C9  30 24		     Msg0     db  '0$'
+    222	00CB  31 24		     Msg1     db  '1$'
+    223
+    224				     ;****** SUBROUTINE	CODE SEGMENT ********************************
+    225	00CD				     .code
+    226	009A			     PrnBit  PROC   near
+    227
+    228				     ; Save registers on the stack
+Turbo Assembler	 Version 3.1	    04/27/20 14:32:38	    Page 5
+c:PRNBIN.asm
+
+
+
+    229	009A  60			     pusha
+    230	009B  9C			     pushf
+    231
+    232				     ; IF01 eax	= 0
+    233	009C  3D 0000			     cmp     ax,0
+    234	009F  75 0A			     jne     ELSE01
+    235				     ; THEN01  Print a zero
+    236	00A1  BA 00C9r			     mov     dx,OFFSET Msg0  ; set pointer to output string
+    237	00A4  B4 09			     mov     ah,9	     ; DOS print string	function #
+    238	00A6  CD 21			     int     21h		 ; print string
+    239	00A8  EB 08 90			     jmp     ENDIF01
+    240	00AB			     ELSE01: ; Print a one
+    241	00AB  BA 00CBr			     mov     dx,OFFSET Msg1  ; set pointer to output string
+    242	00AE  B4 09			     mov     ah,9	     ; DOS print string	function #
+    243	00B0  CD 21			     int     21h		 ; print string
+    244	00B2			     ENDIF01:
+    245				     ; Restore registers from stack
+    246	00B2  9D			     popf
+    247	00B3  61			     popa
+    248
+    249				     ; Return to caller	module
+    250	00B4  C3			     ret
+    251	00B5			     PrnBit  ENDP
+    252					     end     ProgramStart
+Turbo Assembler	 Version 3.1	    04/27/20 14:32:38	    Page 6
+Symbol Table
+
+
+
+
+Symbol Name		Type   Value			   Cref	(defined at #)
+
+??date			Text   "04/27/20"
+??filename		Text   "PRNBIN	"
+??time			Text   "14:32:38"
+??version		Number 030A
+@32Bit			Text   0			   #29
+@CodeSize		Text   1			   #29
+@Cpu			Text   0103H			   #28
+@DataSize		Text   1			   #29
+@FileName		Text   PRNBIN
+@Interface		Text   00h			   #29
+@Model			Text   5			   #29
+@WordSize		Text   2			   #28	#33  #58  #154	#172  #220  #225
+@code			Text   PRNBIN_TEXT		   #29	#29  #58  #172	#225
+@curseg			Text   PRNBIN_TEXT		   #33	#58  #154  #172	 #220  #225
+@data			Text   DGROUP			   #29	64
+@stack			Text   DGROUP			   #29
+Count			Word   DGROUP:0015		   #38	103  121
+DO01			Near   PRNBIN_TEXT:0040		   #106
+ELSE01			Near   PRNBIN_TEXT:00AB		   234	#240
+ENDIF01			Near   PRNBIN_TEXT:00B2		   239	#244
+ENDWHL01		Near   PRNBIN_TEXT:0055		   105	#124
+GetDec			Far    PRNBIN_TEXT:----	Extern	   #60	76
+Greet			Near   PRNBIN_TEXT:0070		   68  #173
+Limit			Word   DGROUP:0017		   #39	104
+Mask1			Word   DGROUP:0019		   #40	114
+Msg0			Byte   DGROUP:00C9		   #221	 236
+Msg1			Byte   DGROUP:00CB		   #222	 241
+MsgEcho			Byte   DGROUP:001B		   #41	82
+MsgEnd			Byte   DGROUP:005D		   #52	129
+MsgOut			Byte   DGROUP:0031		   #45	93
+Msgg1			Byte   DGROUP:006E		   #155	 180
+Msgg2			Byte   DGROUP:0097		   #161	 186
+Msgg3			Byte   DGROUP:00B1		   #165	 192
+N			Word   DGROUP:0013		   #37	77  87	109  111
+PrnBit			Near   PRNBIN_TEXT:009A		   118	#226
+ProgramStart		Far    PRNBIN_TEXT:0000		   #62	252
+Prompt1			Byte   DGROUP:0000		   #34	71
+PutCrLf			Far    PRNBIN_TEXT:----	Extern	   #59	89  90	96  127	 128  132  133	183  189  195  196
+PutDec			Far    PRNBIN_TEXT:----	Extern	   #60	88
+PutStr			Far    PRNBIN_TEXT:----	Extern	   #59
+WHILE01			Near   PRNBIN_TEXT:0037		   #102	 122
+
+Groups & Segments	Bit Size Align	Combine	Class	   Cref	(defined at #)
+
+DGROUP			Group				   #29	29  64
+  STACK			16  0200 Para	Stack	STACK	   #30
+  _DATA			16  00CD Word	Public	DATA	   #29	#33  #154  #220
+PRNBIN_TEXT		16  00B5 Word	Public	CODE	   #29	29  #58	 58  #172  172	#225  225
+

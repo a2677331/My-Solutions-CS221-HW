@@ -1,0 +1,22 @@
+
+ Start  Stop   Length Name               Class
+
+ 00000H 00063H 00064H ARYFLOAT_TEXT      CODE
+ 00070H 000D1H 00062H _DATA              DATA
+ 000E0H 002DFH 00200H STACK              STACK
+
+
+Detailed map of segments
+
+ 0000:0000 0064 C=CODE   S=ARYFLOAT_TEXT  G=(none)  M=C:ARYFLOAT.ASM ACBP=48
+ 0007:0000 0062 C=DATA   S=_DATA          G=DGROUP  M=C:ARYFLOAT.ASM ACBP=48
+ 0007:0070 0200 C=STACK  S=STACK          G=DGROUP  M=C:ARYFLOAT.ASM ACBP=74
+
+  Address         Publics by Name
+
+
+  Address         Publics by Value
+
+
+Program entry point at 0000:0000
+

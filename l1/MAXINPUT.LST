@@ -1,0 +1,312 @@
+Turbo Assembler	 Version 3.1	    04/26/20 15:55:07	    Page 1
+c:MAXINPUT.ASM
+
+
+
+      1				     comment |
+      2				     ***************************************************************
+      3				     Programmer:
+      4				     Date      :  January 22, 2020
+      5				     Course    :  CS221	Machine	Organization & Assembly	Language Programming
+      6				     Project   :  ?? - Input ten integers from the user, echo print each,
+      7						       and print out the maximum value.
+      8				     Assembler :  Borland TASM 3.0
+      9				     File Name :  MaxInput.asm
+     10
+     11				     Input   :	Ten integers.
+     12				     Output  :	Echo of	the input numbers and the maximum input	number.
+     13				     Input Files : None
+     14				     Output Files: None
+     15
+     16
+     17				     PROCEDURES	CALLED:
+     18					 External procedures called:
+     19					     FROM iofar.lib: PutCrLf, GetDec, PutDec
+     20					 Internal procedures called:
+     21					     Greet
+     22
+     23				     |
+     24				     INCLUDELIB	iofar
+     25
+     26				     ;****** BEGIN MAIN	PROGRAM	************************************
+     27					     DOSSEG
+     28					     .186
+     29	0000				     .model large
+     30	0000				     .stack 200h
+     31
+     32				     ;****** MAIN PROGRAM DATA SEGMENT *****************************
+     33	0000				     .data
+     34	0000  45 6E 74 65 72 20	69+  Prompt1  db  'Enter integer #$'
+     35	      6E 74 65 67 65 72	20+
+     36	      23 24
+     37	0010  3A 20 24		     Prompt2  db  ': $'
+     38	0013  ????		     N	      dw  ?
+     39	0015  ????		     Max      dw  ?
+     40	0017  0001		     Count    dw  1
+     41	0019  000A		     Limit    dw  10
+     42	001B  54 68 65 20 69 6E	70+  MsgEcho  db  'The input was:$'
+     43	      75 74 20 77 61 73	3A+
+     44	      24
+     45	002A  54 68 65 20 6D 61	78+  MsgMax   db  'The maximum input integer was: $'
+     46	      69 6D 75 6D 20 69	6E+
+     47	      70 75 74 20 69 6E	74+
+     48	      65 67 65 72 20 77	61+
+     49	      73 3A 20 24
+     50
+     51
+     52				     ;****** MAIN PROGRAM CODE SEGMENT *****************************
+     53	004A				     .code
+     54					     extrn   PutStr: PROC, PutCrLf: PROC
+     55					     extrn   GetDec: PROC, PutDec: PROC
+     56
+     57	0000			     ProgramStart   PROC
+Turbo Assembler	 Version 3.1	    04/26/20 15:55:07	    Page 2
+c:MAXINPUT.ASM
+
+
+
+     58
+     59				     ; Initialize ds register to hold data segment address
+     60	0000  B8 0000s			     mov     ax,@data
+     61	0003  8E D8			     mov     ds,ax
+     62
+     63				     ; Call procedure Greet to print introductory messages to the user
+     64	0005  E8 0099			     call    Greet	  ; call subroutine to print greeting
+     65
+     66				     ; Print prompt message to the user
+     67	0008  BA 0000r			     mov     dx,OFFSET Prompt1	; point	to the Prompt mesg
+     68	000B  B4 09			     mov     ah,9	  ; DOS	print string function #
+     69	000D  CD 21			     int     21h	  ; print string
+     70					; Print	the Count value	as part	of prompt
+     71	000F  A1 0017r			     mov     ax,Count	  ; put	parameter for subroutine PutDec	in ax
+     72	0012  0E E8 0000e		     call    PutDec	  ; print the decimal integer in ax
+     73					; Finish the prompt string
+     74	0016  BA 0010r			     mov     dx,OFFSET Prompt2	; point	to the Prompt mesg
+     75	0019  B4 09			     mov     ah,9	  ; DOS	print string function #
+     76	001B  CD 21			     int     21h	  ; print string
+     77
+     78				     ; Input an	integer	from the user keyboard and assign it to	N
+     79	001D  0E E8 0000e		     call    GetDec	  ; integer from keyboard returned in ax
+     80	0021  A3 0013r			     mov     N,ax	  ; store input	value in memory	location
+     81
+     82				     ; Initialize Max with the first input number
+     83	0024  A3 0015r			     mov     Max,ax
+     84				     ; Increment counter
+     85	0027  FF 06 0017r		     inc     Count
+     86
+     87				     ; Print to	verify the number was correctly	input
+     88				       ; Print message
+     89	002B  BA 001Br			     mov     dx,OFFSET MsgEcho	; point	to the output mesg
+     90	002E  B4 09			     mov     ah,9	  ; DOS	print string function #
+     91	0030  CD 21			     int     21h	  ; print string
+     92				       ; Print the input integer
+     93	0032  A1 0013r			     mov     ax,N	  ; put	parameter for subroutine PutDec	in ax
+     94	0035  0E E8 0000e		     call    PutDec	  ; print the decimal integer in ax
+     95	0039  0E E8 0000e		     call    PutCrLf
+     96	003D  0E E8 0000e		     call    PutCrLf
+     97
+     98				     ; Repeatedly prompt the user and input the	an integer and print the
+     99				     ; integer,	while the number of input integers is less than	the limit.
+    100				     ; Also, find the maximum input number as they are input.
+    101
+    102	0041			     WHILE01:	     ;	Count <	Limit
+    103	0041  A1 0017r			     mov     ax, Count	     ; assign Count to ax
+    104	0044  3B 06 0019r		     cmp     ax, Limit
+    105	0048  7F 41			     jnle    ENDWHL01
+    106	004A			     DO01:	     ; Input integer, print it,	compare	to Max and update
+    107						     ; Max if a	greater	number has been	encountered
+    108					; Print	prompt message to the user
+    109	004A  BA 0000r			     mov     dx,OFFSET Prompt1	; point	to the Prompt mesg
+    110	004D  B4 09			     mov     ah,9	  ; DOS	print string function #
+    111	004F  CD 21			     int     21h	  ; print string
+    112					; Print	the Count value	as part	of prompt
+    113	0051  A1 0017r			     mov     ax,Count	  ; put	parameter for subroutine PutDec	in ax
+    114	0054  0E E8 0000e		     call    PutDec	  ; print the decimal integer in ax
+Turbo Assembler	 Version 3.1	    04/26/20 15:55:07	    Page 3
+c:MAXINPUT.ASM
+
+
+
+    115					; Finish the prompt string
+    116	0058  BA 0010r			     mov     dx,OFFSET Prompt2	; point	to the Prompt mesg
+    117	005B  B4 09			     mov     ah,9	  ; DOS	print string function #
+    118	005D  CD 21			     int     21h	  ; print string
+    119
+    120				       ; Input an integer from the user	keyboard and assign it to N
+    121	005F  0E E8 0000e		     call    GetDec	  ; integer from keyboard returned in ax
+    122	0063  A3 0013r			     mov     N,ax	  ; store input	value in memory	location
+    123
+    124				       ; Test whether the input	number is greater than the current maximum
+    125				       ; IF01 N	> Max
+    126	0066  3B 06 0015r		     cmp     ax, Max
+    127	006A  7E 03			     jle     ENDIF01
+    128				       ; THEN assign N to Max
+    129	006C  A3 0015r			     mov     Max, ax
+    130	006F			       ENDIF01:
+    131				       ; Print to verify that the number was input correctly from
+    132				       ; keyboard and assigned to N correctly
+    133	006F  BA 001Br			     mov     dx,OFFSET MsgEcho	; point	to the output mesg
+    134	0072  B4 09			     mov     ah,9	  ; DOS	print string function #
+    135	0074  CD 21			     int     21h	  ; print string
+    136
+    137				       ; Print the input integer
+    138	0076  A1 0013r			     mov     ax,N	  ; put	parameter for subroutine PutDec	in ax
+    139	0079  0E E8 0000e		     call    PutDec	  ; print the decimal integer in ax
+    140	007D  0E E8 0000e		     call    PutCrLf
+    141	0081  0E E8 0000e		     call    PutCrLf
+    142
+    143				       ; Increment Count and repeat the	loop
+    144	0085  FF 06 0017r		     inc     Count
+    145	0089  EB B6			     jmp     WHILE01
+    146				     ; End of while loop
+    147	008B			     ENDWHL01:
+    148
+    149				     ; Print the maximum integer
+    150				       ; Print explanatory message first
+    151	008B  BA 002Ar			     mov     dx,OFFSET MsgMax  ; point to the output mesg
+    152	008E  B4 09			     mov     ah,9	  ; DOS	print string function #
+    153	0090  CD 21			     int     21h	  ; print string
+    154				       ; Print the maximum integer
+    155	0092  A1 0015r			     mov     ax,Max	    ; put parameter for	subroutine PutDec in ax
+    156	0095  0E E8 0000e		     call    PutDec	  ; print the decimal integer in ax
+    157	0099  0E E8 0000e		     call    PutCrLf
+    158
+    159				     ; Exit to the operating system
+    160	009D  B4 4C			     mov     ah,4ch	  ; DOS	terminate program fn #
+    161	009F  CD 21			     int     21h
+    162	00A1			     ProgramStart    ENDP
+    163
+    164				     comment |
+    165				     ******* PROCEDURE HEADER **************************************
+    166				       PROCEDURE NAME :	Greet
+    167				       PURPOSE :  To print initial greeting messages to	the user
+    168				       INPUT PARAMETERS	: None
+    169				       OUTPUT PARAMETERS or RETURN VALUE:  None
+    170				       NON-LOCAL VARIABLES REFERENCED: None
+    171				       NON-LOCAL VARIABLES MODIFIED :None
+Turbo Assembler	 Version 3.1	    04/26/20 15:55:07	    Page 4
+c:MAXINPUT.ASM
+
+
+
+    172				       PROCEDURES CALLED :
+    173					     FROM iofar.lib: PutCrLf
+    174				       CALLED FROM : main program
+    175				     |
+    176				     ;****** SUBROUTINE	DATA SEGMENT ********************************
+    177	00A1				     .data
+    178	004A  50 72 6F 67 72 61	6D+  Msgg1    db  'Program:    Find maximum number in the input	list $'
+    179	      3A 20 20 20 20 46	69+
+    180	      6E 64 20 6D 61 78	69+
+    181	      6D 75 6D 20 6E 75	6D+
+    182	      62 65 72 20 69 6E	20+
+    183	      74 68 65 20 69 6E	70+
+    184	      75 74 20 6C 69 73	74+
+    185	      20 24
+    186	007D  50 72 6F 67 72 61	6D+  Msgg2    db  'Programmer: XXXXXXXXXXXX $'
+    187	      6D 65 72 3A 20 58	58+
+    188	      58 58 58 58 58 58	58+
+    189	      58 58 58 20 24
+    190	0097  44 61 74 65 3A 20	20+  Msgg3    db  'Date:       January 22, 2020	$'
+    191	      20 20 20 20 20 4A	61+
+    192	      6E 75 61 72 79 20	32+
+    193	      32 2C 20 32 30 32	30+
+    194	      20 24
+    195
+    196
+    197				     ;****** SUBROUTINE	CODE SEGMENT ********************************
+    198	00B5				     .code
+    199	00A1			     Greet   PROC    near
+    200
+    201				     ; Initialize ds register to hold data segment address
+    202	00A1  B8 0000s			     mov     ax,@data
+    203	00A4  8E D8			     mov     ds,ax
+    204
+    205				     ; Save registers on the stack
+    206	00A6  60			     pusha
+    207	00A7  9C			     pushf
+    208
+    209				     ; Print name of program
+    210	00A8  BA 004Ar			     mov     dx,OFFSET Msgg1 ; set pointer to 1st greeting message
+    211	00AB  B4 09			     mov     ah,9	     ; DOS print string	function #
+    212	00AD  CD 21			     int     21h	     ; print string
+    213	00AF  0E E8 0000e		     call    PutCrLf
+    214
+    215				     ; Print name of programmer
+    216	00B3  BA 007Dr			     mov     dx,OFFSET Msgg2 ; set pointer to 2nd greeting message
+    217	00B6  B4 09			     mov     ah,9	     ; DOS print string	function #
+    218	00B8  CD 21			     int     21h	     ; print string
+    219	00BA  0E E8 0000e		     call    PutCrLf
+    220
+    221				     ; Print date
+    222	00BE  BA 0097r			     mov     dx,OFFSET Msgg3 ; set pointer to 3rd greeting message
+    223	00C1  B4 09			     mov     ah,9	     ; DOS print string	function #
+    224	00C3  CD 21			     int     21h	     ; print string
+    225	00C5  0E E8 0000e		     call    PutCrLf
+    226
+    227				     ; Restore registers from stack
+    228	00C9  9D			     popf
+Turbo Assembler	 Version 3.1	    04/26/20 15:55:07	    Page 5
+c:MAXINPUT.ASM
+
+
+
+    229	00CA  61			     popa
+    230
+    231				     ; Return to caller	module
+    232	00CB  C3			     ret
+    233	00CC			     Greet   ENDP
+    234					     end     ProgramStart
+Turbo Assembler	 Version 3.1	    04/26/20 15:55:07	    Page 6
+Symbol Table
+
+
+
+
+Symbol Name		Type   Value			   Cref	(defined at #)
+
+??date			Text   "04/26/20"
+??filename		Text   "MAXINPUT"
+??time			Text   "15:55:07"
+??version		Number 030A
+@32Bit			Text   0			   #29
+@CodeSize		Text   1			   #29
+@Cpu			Text   0103H			   #28
+@DataSize		Text   1			   #29
+@FileName		Text   MAXINPUT
+@Interface		Text   00h			   #29
+@Model			Text   5			   #29
+@WordSize		Text   2			   #28	#33  #53  #177	#198
+@code			Text   MAXINPUT_TEXT		   #29	#29  #53  #198
+@curseg			Text   MAXINPUT_TEXT		   #33	#53  #177  #198
+@data			Text   DGROUP			   #29	60  202
+@stack			Text   DGROUP			   #29
+Count			Word   DGROUP:0017		   #40	71  85	103  113  144
+DO01			Near   MAXINPUT_TEXT:004A	   #106
+ENDIF01			Near   MAXINPUT_TEXT:006F	   127	#130
+ENDWHL01		Near   MAXINPUT_TEXT:008B	   105	#147
+GetDec			Far    MAXINPUT_TEXT:---- Extern   #55	79  121
+Greet			Near   MAXINPUT_TEXT:00A1	   64  #199
+Limit			Word   DGROUP:0019		   #41	104
+Max			Word   DGROUP:0015		   #39	83  126	 129  155
+MsgEcho			Byte   DGROUP:001B		   #42	89  133
+MsgMax			Byte   DGROUP:002A		   #45	151
+Msgg1			Byte   DGROUP:004A		   #178	 210
+Msgg2			Byte   DGROUP:007D		   #186	 216
+Msgg3			Byte   DGROUP:0097		   #190	 222
+N			Word   DGROUP:0013		   #38	80  93	122  138
+ProgramStart		Far    MAXINPUT_TEXT:0000	   #57	234
+Prompt1			Byte   DGROUP:0000		   #34	67  109
+Prompt2			Byte   DGROUP:0010		   #37	74  116
+PutCrLf			Far    MAXINPUT_TEXT:---- Extern   #54	95  96	140  141  157  213  219	 225
+PutDec			Far    MAXINPUT_TEXT:---- Extern   #55	72  94	114  139  156
+PutStr			Far    MAXINPUT_TEXT:---- Extern   #54
+WHILE01			Near   MAXINPUT_TEXT:0041	   #102	 145
+
+Groups & Segments	Bit Size Align	Combine	Class	   Cref	(defined at #)
+
+DGROUP			Group				   #29	29  60	202
+  STACK			16  0200 Para	Stack	STACK	   #30
+  _DATA			16  00B5 Word	Public	DATA	   #29	#33  #177
+MAXINPUT_TEXT		16  00CC Word	Public	CODE	   #29	29  #53	 53  #198  198
+

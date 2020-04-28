@@ -1,0 +1,470 @@
+Turbo Assembler	 Version 3.1	    04/27/20 17:46:39	    Page 1
+c:proj2.asm
+
+
+
+      1				     comment |
+      2				     ***************************************************************
+      3				     Programmer:
+      4				     Date      :  April	27, 2020
+      5				     Course    :  CS221	Machine	Organization & Assembly	Language Programming
+      6				     Project   :  Project 2 - Solution for the Tower of	Hanoi
+      7				     Assembler :  Borland TASM 3.0
+      8				     File Name :  proj2.asm
+      9
+     10				     Input   :	Number of disks, starting pole position	and ending pole	position.
+     11				     Output  :	Solution for the Tower of Hanoi.
+     12				     Input Files : None
+     13				     Output Files: None
+     14
+     15
+     16				     PROCEDURES	CALLED:
+     17					 External procedures called:
+     18					     FROM iofar.lib: PutCrLf, GetDec, PutDec
+     19					 Internal procedures called:
+     20					     Greet
+     21					     Hanoi
+     22				     |
+     23				     INCLUDELIB	iofar
+     24
+     25				     ;****** BEGIN MAIN	PROGRAM	************************************
+     26					     DOSSEG
+     27					     .186
+     28	0000				     .model large
+     29	0000				     .stack 200h
+     30
+     31				     ;****** MAIN PROGRAM DATA SEGMENT *****************************
+     32	0000				     .data
+     33	0000  45 6E 74 65 72 20	74+  Prompt1  db  'Enter the number of disks (from 3 to	7 only)	#$'
+     34	      68 65 20 6E 75 6D	62+
+     35	      65 72 20 6F 66 20	64+
+     36	      69 73 6B 73 20 28	66+
+     37	      72 6F 6D 20 33 20	74+
+     38	      6F 20 37 20 6F 6E	6C+
+     39	      79 29 20 23 24
+     40	002F  45 6E 74 65 72 20	74+  Prompt2  db  'Enter the starting pole position (from 1 to 3 only) #$'
+     41	      68 65 20 73 74 61	72+
+     42	      74 69 6E 67 20 70	6F+
+     43	      6C 65 20 70 6F 73	69+
+     44	      74 69 6F 6E 20 28	66+
+     45	      72 6F 6D 20 31 20	74+
+     46	      6F 20 33 20 6F 6E	6C+
+     47	      79 29 20 23 24
+     48	0065  45 6E 74 65 72 20	74+  Prompt3  db  'Enter the ending pole position (from	1 to 3 only) #$'
+     49	      68 65 20 65 6E 64	69+
+     50	      6E 67 20 70 6F 6C	65+
+     51	      20 70 6F 73 69 74	69+
+     52	      6F 6E 20 28 66 72	6F+
+     53	      6D 20 31 20 74 6F	20+
+     54	      33 20 6F 6E 6C 79	29+
+     55	      20 23 24
+     56	0099  3A 20 24		     Prompt4  db  ': $'
+     57	009C  ????		     Disks    dw  ?
+Turbo Assembler	 Version 3.1	    04/27/20 17:46:39	    Page 2
+c:proj2.asm
+
+
+
+     58	009E  ????		     S		  dw  ?
+     59	00A0  ????		     E		      dw  ?
+     60	00A2  54 68 65 20 69 6E	70+  MsgEcho  db  'The input was:$'
+     61	      75 74 20 77 61 73	3A+
+     62	      24
+     63	00B1  54 68 65 20 69 6E	70+  MsgCheck  db  'The	input was invalid, please re-enter an integer from 1 to	3: $'
+     64	      75 74 20 77 61 73	20+
+     65	      69 6E 76 61 6C 69	64+
+     66	      2C 20 70 6C 65 61	73+
+     67	      65 20 72 65 2D 65	6E+
+     68	      74 65 72 20 61 6E	20+
+     69	      69 6E 74 65 67 65	72+
+     70	      20 66 72 6F 6D 20	31+
+     71	      20 74 6F 20 33 3A	20+
+     72	      24
+     73	00F1  53 6F 6C 75 74 69	6F+  MsgTower db  'Solution for	the Tower of Hanoi: $'
+     74	      6E 20 66 6F 72 20	74+
+     75	      68 65 20 54 6F 77	65+
+     76	      72 20 6F 66 20 48	61+
+     77	      6E 6F 69 3A 20 24
+     78
+     79
+     80				     ;****** MAIN PROGRAM CODE SEGMENT *****************************
+     81	0113				     .code
+     82					     extrn   PutStr: PROC, PutCrLf: PROC
+     83					     extrn   GetDec: PROC, PutDec: PROC
+     84
+     85	0000			     ProgramStart   PROC
+     86
+     87				     ; Initialize ds register to hold data segment address
+     88	0000  B8 0000s			     mov     ax,@data
+     89	0003  8E D8			     mov     ds,ax
+     90
+     91
+     92				     ; Call procedure Greet to print introductory messages to the user
+     93	0005  E8 013B			     call    Greet	  ; call subroutine to print greeting
+     94				     ; Print prompt message to the user
+     95	0008  BA 0000r			     mov     dx,OFFSET Prompt1	; point	to the Prompt mesg
+     96	000B  B4 09			     mov     ah,9	  ; DOS	print string function #
+     97	000D  CD 21			     int     21h	  ; print string
+     98				     ; Finish the prompt string
+     99	000F  BA 0099r			     mov     dx,OFFSET Prompt4	; point	to the Prompt mesg
+    100	0012  B4 09			     mov     ah,9	  ; DOS	print string function #
+    101	0014  CD 21			     int     21h	  ; print string
+    102
+    103				     ; Input an	integer	from the user keyboard and assign it to	N
+    104	0016  0E E8 0000e		     call    GetDec	  ; integer from keyboard returned in ax
+    105	001A  A3 009Cr			     mov     Disks,ax	      ;	store input value in memory location
+    106
+    107
+    108	001D			     ENDWHILE1:
+    109
+    110				       ; Print message
+    111	001D  BA 00A2r			     mov     dx,OFFSET MsgEcho	; point	to the output mesg
+    112	0020  B4 09			     mov     ah,9	  ; DOS	print string function #
+    113	0022  CD 21			     int     21h	  ; print string
+    114				       ; Print the input integer
+Turbo Assembler	 Version 3.1	    04/27/20 17:46:39	    Page 3
+c:proj2.asm
+
+
+
+    115	0024  A1 009Cr			     mov     ax,Disks	     ; put parameter for subroutine PutDec in ax
+    116	0027  0E E8 0000e		     call    PutDec	  ; print the decimal integer in ax
+    117	002B  0E E8 0000e		     call    PutCrLf	     ;new line character
+    118
+    119
+    120				     ; Print prompt message to the user
+    121	002F  BA 002Fr			     mov     dx,OFFSET Prompt2	; point	to the Prompt mesg
+    122	0032  B4 09			     mov     ah,9	  ; DOS	print string function #
+    123	0034  CD 21			     int     21h	  ; print string
+    124				     ; Finish the prompt string
+    125	0036  BA 0099r			     mov     dx,OFFSET Prompt4	; point	to the Prompt mesg
+    126	0039  B4 09			     mov     ah,9	  ; DOS	print string function #
+    127	003B  CD 21			     int     21h	  ; print string
+    128
+    129				     ; Input an	integer	from the user keyboard and assign it to	N
+    130	003D  0E E8 0000e		     call    GetDec	  ; integer from keyboard returned in ax
+    131	0041  A3 009Er			     mov     S,ax	  ; store input	value in memory	location
+    132				     ; Print to	verify the number was correctly	input
+    133				       ; Print message
+    134	0044  BA 00A2r			     mov     dx,OFFSET MsgEcho	; point	to the output mesg
+    135	0047  B4 09			     mov     ah,9	  ; DOS	print string function #
+    136	0049  CD 21			     int     21h	  ; print string
+    137				     ; Print the input integer
+    138	004B  A1 009Er			     mov     ax,S	 ; put parameter for subroutine	PutDec in ax
+    139	004E  0E E8 0000e		     call    PutDec	  ; print the decimal integer in ax
+    140	0052  0E E8 0000e		     call    PutCrLf	     ;new line character
+    141
+    142
+    143				     ; Print prompt message to the user
+    144	0056  BA 0065r			     mov     dx,OFFSET Prompt3	; point	to the Prompt mesg
+    145	0059  B4 09			     mov     ah,9	  ; DOS	print string function #
+    146	005B  CD 21			     int     21h	  ; print string
+    147				     ; Finish the prompt string
+    148	005D  BA 0099r			     mov     dx,OFFSET Prompt4	; point	to the Prompt mesg
+    149	0060  B4 09			     mov     ah,9	  ; DOS	print string function #
+    150	0062  CD 21			     int     21h	  ; print string
+    151
+    152				     ; Input an	integer	from the user keyboard and assign it to	N
+    153	0064  0E E8 0000e		     call    GetDec	  ; integer from keyboard returned in ax
+    154	0068  A3 00A0r			     mov     E,ax	  ; store input	value in memory	location
+    155
+    156				       ; Print message
+    157	006B  BA 00A2r			     mov     dx,OFFSET MsgEcho	; point	to the output mesg
+    158	006E  B4 09			     mov     ah,9	  ; DOS	print string function #
+    159	0070  CD 21			     int     21h	  ; print string
+    160				       ; Print the input integer
+    161	0072  A1 00A0r			     mov     ax,E	; put parameter	for subroutine PutDec in ax
+    162	0075  0E E8 0000e		     call    PutDec	  ; print the decimal integer in ax
+    163	0079  0E E8 0000e		     call    PutCrLf	     ;new line character
+    164
+    165
+    166				     ;	     Print message
+    167	007D  BA 00F1r			     mov dx,OFFSET MsgTower  ;	     point to the output message
+    168	0080  B4 09			     mov ah,9	     ;	     DOS print string fuction
+    169	0082  CD 21			     int 21h ;	     print string
+    170	0084  0E E8 0000e		     call PutCrLf    ;	     new line character
+    171
+Turbo Assembler	 Version 3.1	    04/27/20 17:46:39	    Page 4
+c:proj2.asm
+
+
+
+    172				     ;STARTING THE TOWER
+    173	0088  2B C0			     sub ax,ax
+    174	008A  2B DB			     sub bx,bx
+    175	008C  2B C9			     sub cx,cx
+    176	008E  FF 36 009Cr		     push Disks
+    177	0092  FF 36 009Er		     push S
+    178	0096  FF 36 00A0r		     push E
+    179	009A  E8 0004			     call Hanoi
+    180
+    181				     ; Exit to the operating system
+    182	009D  B4 4C			     mov     ah,4ch	  ; DOS	terminate program fn #
+    183	009F  CD 21			     int     21h
+    184	00A1			     ProgramStart    ENDP
+    185				     comment |
+    186				     ******* PROCEDURE HEADER **************************************
+    187				       PROCEDURE NAME :	Hanoi
+    188				       PURPOSE :  To solve and output the solution for the Tower of Hanoi
+    189				       INPUT PARAMETERS	: The number of	disks, the starting pole position and ending pole position
+    190				       OUTPUT PARAMETERS or RETURN VALUE: Solution for The Tower of Hanoi
+    191				       NON-LOCAL VARIABLES REFERENCED: None
+    192				       NON-LOCAL VARIABLES MODIFIED :None
+    193				       PROCEDURES CALLED :
+    194					     FROM iofar.lib: PutCrLf
+    195				       CALLED FROM : main program
+    196				     |
+    197				     ;****** SUBROUTINE	DATA SEGMENT ********************************
+    198	00A1			     .data
+    199	0113  2E 09 4D 6F 76 65	20+	     string1  db  '. Move disk $'
+    200	      64 69 73 6B 20 24
+    201	0120  66 72 6F 6D 20 70	6F+	     string2  db  'from	pole $'
+    202	      6C 65 20 24
+    203	012B  74 6F 20 70 6F 6C	65+	     string3  db  'to pole $'
+    204	      20 24
+    205	0134  0000			     count    dw   0
+    206				     ;****** SUBROUTINE	CODE SEGMENT ********************************
+    207	0136			     .code
+    208	00A1			     Hanoi PROC		     near
+    209
+    210				     ;	     Save registers on the stack
+    211	00A1  60			 pusha
+    212	00A2  9C			     pushf
+    213				     ;	     Set up bp register	to point to parameters
+    214	00A3  8B EC			 mov  bp,sp
+    215
+    216				     ;	     If	(Disks == 1)
+    217	00A5  8B 4E 18			     mov cx, [bp+24]  ;cx = Disks
+    218	00A8  83 F9 01			     cmp cx,1		     ;(Disks ==	1)
+    219	00AB  75 3C			     jne IF01
+    220
+    221				     ;	     PRINTING:#. Move disk Disks from pole S to	pole E
+    222	00AD  FF 06 0134r		     inc count
+    223	00B1  A1 0134r			     mov ax,count
+    224	00B4  0E E8 0000e		     call PutDec
+    225
+    226	00B8  BA 0113r			     mov     dx,OFFSET string1 ; point to the Prompt mesg
+    227	00BB  B4 09			     mov     ah,9	  ; DOS	print string function #
+    228	00BD  CD 21			     int     21h	  ; print string
+Turbo Assembler	 Version 3.1	    04/27/20 17:46:39	    Page 5
+c:proj2.asm
+
+
+
+    229
+    230	00BF  8B 46 18			     mov     ax,[bp+24]	    ; put parameter for	subroutine PutDec in ax
+    231	00C2  0E E8 0000e		     call    PutDec	  ; print the decimal integer in ax
+    232
+    233	00C6  BA 0120r			     mov     dx,OFFSET string2 ; point to the Prompt mesg
+    234	00C9  B4 09			     mov     ah,9	  ; DOS	print string function #
+    235	00CB  CD 21			     int     21h	  ; print string
+    236
+    237	00CD  8B 46 16			     mov     ax,[bp+22]	    ; put parameter for	subroutine PutDec in ax
+    238	00D0  0E E8 0000e		     call    PutDec	  ; print the decimal integer in ax
+    239
+    240	00D4  BA 012Br			     mov     dx,OFFSET string3 ; point to the Prompt mesg
+    241	00D7  B4 09			     mov     ah,9	  ; DOS	print string function #
+    242	00D9  CD 21			     int     21h	  ; print string
+    243
+    244	00DB  8B 46 14			     mov     ax,[bp+20]	    ; put parameter for	subroutine PutDec in ax
+    245	00DE  0E E8 0000e		     call    PutDec	  ; print the decimal integer in ax
+    246	00E2  0E E8 0000e		     call PutCrLf
+    247	00E6  EB 56 90			     jmp ENDIF01
+    248
+    249				     ; 6 - s - e, [bp+20] = E, [bp+22] = S,	  D,S,E
+    250	00E9			     IF01:
+    251	00E9  49			     dec cx	     ; cx = n -	1
+    252
+    253	00EA  BB 0006			     mov bx,6	     ; bx = 6
+    254	00ED  8B 46 14			     mov ax,[bp+20]  ;ax = E
+    255	00F0  2B D8			     sub bx,ax		     ;bx = 6 - E
+    256	00F2  8B 46 16			     mov ax,[bp+22]  ;ax = S
+    257	00F5  2B D8			     sub bx,ax		     ;bx = 6 - E - S
+    258
+    259				     ;	     FISRT RECURSIVE CALL: Hanoi(Disks - 1, S, 6 - S - E)
+    260	00F7  51			     push cx	     ;push Disks - 1
+    261	00F8  50			     push ax	 ;push S
+    262	00F9  53			     push bx	     ;push 6 - E - S
+    263	00FA  E8 FFA4			     call Hanoi
+    264
+    265
+    266				     ;	     PRINTING:#. Move disk Disks from pole S to	pole E
+    267	00FD  FF 06 0134r		     inc count
+    268	0101  A1 0134r			     mov ax,count
+    269	0104  0E E8 0000e		     call PutDec
+    270
+    271	0108  BA 0113r			     mov     dx,OFFSET string1 ; point to the Prompt mesg
+    272	010B  B4 09			     mov     ah,9	  ; DOS	print string function #
+    273	010D  CD 21			     int     21h	  ; print string
+    274
+    275	010F  8B 46 18			     mov     ax,[bp+24]	    ; put parameter for	subroutine PutDec in ax
+    276	0112  0E E8 0000e		     call    PutDec	  ; print the decimal integer in ax
+    277
+    278	0116  BA 0120r			     mov     dx,OFFSET string2 ; point to the Prompt mesg
+    279	0119  B4 09			     mov     ah,9	  ; DOS	print string function #
+    280	011B  CD 21			     int     21h	  ; print string
+    281
+    282	011D  8B 46 16			     mov     ax,[bp+22]	    ; put parameter for	subroutine PutDec in ax
+    283	0120  0E E8 0000e		     call    PutDec	  ; print the decimal integer in ax
+    284
+    285	0124  BA 012Br			     mov     dx,OFFSET string3 ; point to the Prompt mesg
+Turbo Assembler	 Version 3.1	    04/27/20 17:46:39	    Page 6
+c:proj2.asm
+
+
+
+    286	0127  B4 09			     mov     ah,9	  ; DOS	print string function #
+    287	0129  CD 21			     int     21h	  ; print string
+    288
+    289	012B  8B 46 14			     mov     ax,[bp+20]	    ; put parameter for	subroutine PutDec in ax
+    290	012E  0E E8 0000e		     call    PutDec	  ; print the decimal integer in ax
+    291	0132  0E E8 0000e		     call PutCrLf
+    292
+    293
+    294				     ;	     SECOND RECURSIVE CALL: Hanoi(Disks	- 1, 6 - S - E,	E)
+    295	0136  51			     push cx	     ;push Disks - 1
+    296	0137  53			     push bx	     ;push 6 - S - E
+    297	0138  FF 76 14			     push [bp+20]    ;push E
+    298	013B  E8 FF63			     call Hanoi
+    299
+    300	013E			     ENDIF01:
+    301
+    302
+    303				     ; restore registers and return having passed the result back
+    304	013E  9D			     popf
+    305	013F  61			     popa
+    306	0140  C2 0006			     ret 6
+    307
+    308	0143			     Hanoi  ENDP
+    309					     comment |
+    310				     ******* PROCEDURE HEADER **************************************
+    311				       PROCEDURE NAME :	Greet
+    312				       PURPOSE :  To print initial greeting messages to	the user
+    313				       INPUT PARAMETERS	: None
+    314				       OUTPUT PARAMETERS or RETURN VALUE:  None
+    315				       NON-LOCAL VARIABLES REFERENCED: None
+    316				       NON-LOCAL VARIABLES MODIFIED :None
+    317				       PROCEDURES CALLED :
+    318					     FROM iofar.lib: PutCrLf
+    319				       CALLED FROM : main program
+    320				     |
+    321				     ;****** SUBROUTINE	DATA SEGMENT ********************************
+    322	0143				     .data
+    323	0136  50 72 6F 67 72 61	6D+  Msgg1    db  'Program: The	Tower of Hanoi $'
+    324	      3A 20 54 68 65 20	54+
+    325	      6F 77 65 72 20 6F	66+
+    326	      20 48 61 6E 6F 69	20+
+    327	      24
+    328	0153  50 72 6F 67 72 61	6D+  Msgg2    db  'Programmer: Ngoc Anh	Thy Ly $'
+    329	      6D 65 72 3A 20 4E	67+
+    330	      6F 63 20 41 6E 68	20+
+    331	      54 68 79 20 4C 79	20+
+    332	      24
+    333	0170  44 61 74 65 3A 20	20+  Msgg3    db  'Date:       April 27, 2020 $'
+    334	      20 20 20 20 20 41	70+
+    335	      72 69 6C 20 32 37	2C+
+    336	      20 32 30 32 30 20	24
+    337
+    338
+    339				     ;****** SUBROUTINE	CODE SEGMENT ********************************
+    340	018C				     .code
+    341	0143			     Greet   PROC    near
+    342
+Turbo Assembler	 Version 3.1	    04/27/20 17:46:39	    Page 7
+c:proj2.asm
+
+
+
+    343				     ; Initialize ds register to hold data segment address
+    344	0143  B8 0000s			     mov     ax,@data
+    345	0146  8E D8			     mov     ds,ax
+    346
+    347				     ; Save registers on the stack
+    348	0148  60			     pusha
+    349	0149  9C			     pushf
+    350
+    351				     ; Print name of program
+    352	014A  BA 0136r			     mov     dx,OFFSET Msgg1 ; set pointer to 1st greeting message
+    353	014D  B4 09			     mov     ah,9	     ; DOS print string	function #
+    354	014F  CD 21			     int     21h	     ; print string
+    355	0151  0E E8 0000e		     call    PutCrLf
+    356
+    357				     ; Print name of programmer
+    358	0155  BA 0153r			     mov     dx,OFFSET Msgg2 ; set pointer to 2nd greeting message
+    359	0158  B4 09			     mov     ah,9	     ; DOS print string	function #
+    360	015A  CD 21			     int     21h	     ; print string
+    361	015C  0E E8 0000e		     call    PutCrLf
+    362
+    363				     ; Print date
+    364	0160  BA 0170r			     mov     dx,OFFSET Msgg3 ; set pointer to 3rd greeting message
+    365	0163  B4 09			     mov     ah,9	     ; DOS print string	function #
+    366	0165  CD 21			     int     21h	     ; print string
+    367	0167  0E E8 0000e		     call    PutCrLf
+    368
+    369				     ; Restore registers from stack
+    370	016B  9D			     popf
+    371	016C  61			     popa
+    372
+    373				     ; Return to caller	module
+    374	016D  C3			     ret
+    375	016E			     Greet   ENDP
+    376				     end ProgramStart
+Turbo Assembler	 Version 3.1	    04/27/20 17:46:39	    Page 8
+Symbol Table
+
+
+
+
+Symbol Name		Type   Value			   Cref	(defined at #)
+
+??date			Text   "04/27/20"
+??filename		Text   "proj2	"
+??time			Text   "17:46:38"
+??version		Number 030A
+@32Bit			Text   0			   #28
+@CodeSize		Text   1			   #28
+@Cpu			Text   0103H			   #27
+@DataSize		Text   1			   #28
+@FileName		Text   proj2
+@Interface		Text   00h			   #28
+@Model			Text   5			   #28
+@WordSize		Text   2			   #27	#32  #81  #198	#207  #322  #340
+@code			Text   proj2_TEXT		   #28	#28  #81  #207	#340
+@curseg			Text   proj2_TEXT		   #32	#81  #198  #207	 #322  #340
+@data			Text   DGROUP			   #28	88  344
+@stack			Text   DGROUP			   #28
+Disks			Word   DGROUP:009C		   #57	105  115  176
+E			Word   DGROUP:00A0		   #59	154  161  178
+ENDIF01			Near   proj2_TEXT:013E		   247	#300
+ENDWHILE1		Near   proj2_TEXT:001D		   #108
+GetDec			Far    proj2_TEXT:---- Extern	   #83	104  130  153
+Greet			Near   proj2_TEXT:0143		   93  #341
+Hanoi			Near   proj2_TEXT:00A1		   179	#208  263  298
+IF01			Near   proj2_TEXT:00E9		   219	#250
+MsgCheck		Byte   DGROUP:00B1		   #63
+MsgEcho			Byte   DGROUP:00A2		   #60	111  134  157
+MsgTower		Byte   DGROUP:00F1		   #73	167
+Msgg1			Byte   DGROUP:0136		   #323	 352
+Msgg2			Byte   DGROUP:0153		   #328	 358
+Msgg3			Byte   DGROUP:0170		   #333	 364
+ProgramStart		Far    proj2_TEXT:0000		   #85	376
+Prompt1			Byte   DGROUP:0000		   #33	95
+Prompt2			Byte   DGROUP:002F		   #40	121
+Prompt3			Byte   DGROUP:0065		   #48	144
+Prompt4			Byte   DGROUP:0099		   #56	99  125	 148
+PutCrLf			Far    proj2_TEXT:---- Extern	   #82	117  140  163  170  246	 291  355  361	367
+PutDec			Far    proj2_TEXT:---- Extern	   #83	116  139  162  224  231	 238  245  269	276  283  290
+PutStr			Far    proj2_TEXT:---- Extern	   #82
+S			Word   DGROUP:009E		   #58	131  138  177
+count			Word   DGROUP:0134		   #205	 222  223  267	268
+string1			Byte   DGROUP:0113		   #199	 226  271
+string2			Byte   DGROUP:0120		   #201	 233  278
+string3			Byte   DGROUP:012B		   #203	 240  285
+
+Groups & Segments	Bit Size Align	Combine	Class	   Cref	(defined at #)
+
+DGROUP			Group				   #28	28  88	344
+  STACK			16  0200 Para	Stack	STACK	   #29
+  _DATA			16  018C Word	Public	DATA	   #28	#32  #198  #322
+proj2_TEXT		16  016E Word	Public	CODE	   #28	28  #81	 81  #207  207	#340  340
+

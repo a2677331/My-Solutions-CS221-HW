@@ -1,0 +1,174 @@
+Turbo Assembler	 Version 4.1	    04/03/20 13:03:01	    Page 1
+c:roots1.asm
+
+
+
+      1				     comment |
+      2				     ***************************************************************
+      3				     Instructor:  T.Dutta
+      4				     Date      :  April	1st, 2020
+      5				     Course    :  CS221	Machine	Organization & Assembly	Language Programming
+      6				     Project   :  FPU manipulation
+      7				     Assembler :  Borland TASM
+      8				     File Name :  Roots1.asm
+      9
+     10				     Input   :	none; use predefined numbers
+     11				     Output  :	none; use memory dumps to verify program operation
+     12				     Input Files : None
+     13				     Output Files: None
+     14
+     15
+     16				     PROCEDURES	CALLED:
+     17					 Internal procedures called:
+     18					     roots
+     19
+     20				     |
+     21				     ;****** TASM Directives ************************************
+     22	0000				     .MODEL  LARGE
+     23					     DOSSEG
+     24					     .186
+     25					     .8087
+     26	0000				     .stack 200h
+     27
+     28				     ;****** MAIN PROGRAM DATA SEGMENT ****************************
+     29	0000				     .data
+     30							   ; set up the	floating point constants
+     31							   ; for the quadratic root formula
+     32							   ; x=(-b+/-(b^2-4ac)^0.5)/2a
+     33	0000  40000000		     Two      dd  2.0	   ; the constant 2
+     34	0004  40800000		     Four     dd  4.0	   ; the constant 4
+     35							   ; use the FPU to determine the roots	of the
+     36							   ; binomial 3.0005x^2	+ 2.317x - 9
+     37	0008  40400831		     A	      dd  3.0005   ; coefficient of x^2
+     38	000C  401449BA		     B	      dd  2.317	   ; coefficient of x
+     39	0010  41100000		     C	      dd  9.0	    ; coefficient of x^0
+     40	0014  ????????		     R1	      dd  ?	   ; first real	root
+     41	0018  ????????		     R2	      dd  ?	   ; 2nd real root
+     42	001C  ????????		     num_NAN  dd ?;;;;;;;;;;;;;;;;;;;;
+     43
+     44	0020				     .code
+     45				     ;****** MAIN PROGRAM CODE SEGMENT *****************************
+     46
+     47	0000			     ProgramStart   PROC
+     48
+     49				     ; Initialize ds register to hold data segment address
+     50	0000  B8 0000s			     mov     ax,@data
+     51	0003  8E D8			     mov     ds,ax
+     52
+     53	0005  0E E8 0005 90		     call    far ptr roots ; call the far procedure to use the FPU
+     54								   ; to	determine the roots of the quadratic
+     55								   ; equation
+     56
+     57	000A  B4 4C			     mov     ah,4ch	   ; return home to DOS
+Turbo Assembler	 Version 4.1	    04/03/20 13:03:01	    Page 2
+c:roots1.asm
+
+
+
+     58	000C  CD 21			     int     21h
+     59
+     60	000E			     ProgramStart    ENDP
+     61
+     62				     comment |
+     63				     ******* PROCEDURE HEADER **************************************
+     64				       PROCEDURE NAME :	roots
+     65				       PURPOSE :  To determine the roots of a quadratic	formula
+     66				       INPUT PARAMETERS	: None
+     67				       OUTPUT PARAMETERS or RETURN VALUE:  None
+     68				       NON-LOCAL VARIABLES REFERENCED: Two, Four, A, B,	C
+     69				       NON-LOCAL VARIABLES MODIFIED : R1, R2
+     70				       PROCEDURES CALLED : none
+     71				       CALLED FROM : main program
+     72				     |
+     73
+     74	000E			     roots	     PROC    far
+     75
+     76	000E  9B DB E3				     finit	 ; initialize the FPU unit
+     77
+     78	0011  9B D9 06 0000r			     fld     Two  ; start to determine 2a
+     79	0016  9B D9 06 0008r			     fld     A
+     80	001B  9B DE C9				     fmulp
+     81
+     82	001E  9B D9 06 0004r			     fld     Four  ; start to determine	4ac
+     83	0023  9B D9 06 0008r			     fld     A
+     84	0028  9B DE C9				     fmulp
+     85	002B  9B D9 06 0010r			     fld     C
+     86	0030  9B DE C9				     fmulp
+     87
+     88	0033  9B D9 06 000Cr			     fld     B	   ; start to determine	b^2
+     89	0038  9B D9 06 000Cr			     fld     B
+     90	003D  9B DE C9				     fmulp
+     91	0040  9B DE E1				     fsubr	   ; calculate b^2-4ac
+     92
+     93	0043  9B D9 FA				     fsqrt	   ; calculate (b^2-4ac)^0.5
+     94
+     95	0046  9B D9 1E 001Cr			     fstp    num_NAN
+     96
+     97
+     98	004B  9B D9 06 000Cr			     fld     B	   ; start to determine	the first root
+     99
+    100	0050  9B D9 E0				     fchs	   ; -B
+    101	0053  9B D8 E1				     fsub    ST,ST(1)
+    102	0056  9B D8 F2				     fdiv    ST,ST(2)
+    103	0059  9B D9 1E 0014r			     fstp    R1	     ; save the	first root and pop the FPU stack
+    104
+    105	005E  9B D9 06 000Cr			     fld     B	   ; start to determine	the second root
+    106	0063  9B D9 E0				     fchs	   ; -B
+    107	0066  9B DE C1				     fadd
+    108	0069  9B DE F1				     fdivr
+    109	006C  9B D9 1E 0018r			     fstp    R2	   ; save the 2nd root and pop the FPU stack
+    110
+    111	0071  9B				     fwait
+    112	0072  CB				     ret
+    113	0073			     roots	     endp
+    114
+Turbo Assembler	 Version 4.1	    04/03/20 13:03:01	    Page 3
+c:roots1.asm
+
+
+
+    115
+    116
+    117					     end     ProgramStart
+Turbo Assembler	 Version 4.1	    04/03/20 13:03:01	    Page 4
+Symbol Table
+
+
+
+
+Symbol Name		Type   Value			   Cref	(defined at #)
+
+??date			Text   "04/03/20"
+??filename		Text   "roots1	"
+??time			Text   "13:03:01"
+??version		Number 040A
+@32Bit			Text   0			   #22
+@CodeSize		Text   1			   #22
+@Cpu			Text   0103H			   #24	#25
+@DataSize		Text   1			   #22
+@FileName		Text   roots1
+@Interface		Text   000h			   #22
+@Model			Text   5			   #22
+@WordSize		Text   2			   #24	#25  #29  #44
+@code			Text   roots1_TEXT		   #22	#22  #44
+@curseg			Text   roots1_TEXT		   #29	#44
+@data			Text   DGROUP			   #22	50
+@stack			Text   DGROUP			   #22
+A			Dword  DGROUP:0008		   #37	79  83
+B			Dword  DGROUP:000C		   #38	88  89	98  105
+C			Dword  DGROUP:0010		   #39	85
+Four			Dword  DGROUP:0004		   #34	82
+ProgramStart		Far    roots1_TEXT:0000		   #47	117
+R1			Dword  DGROUP:0014		   #40	103
+R2			Dword  DGROUP:0018		   #41	109
+Two			Dword  DGROUP:0000		   #33	78
+num_NAN			Dword  DGROUP:001C		   #42	95
+roots			Far    roots1_TEXT:000E		   53  #74
+
+Groups & Segments	Bit Size Align	Combine	Class	   Cref	(defined at #)
+
+DGROUP			Group				   #22	22  50
+  STACK			16  0200 Para	Stack	STACK	   #26
+  _DATA			16  0020 Word	Public	DATA	   #22	#29
+roots1_TEXT		16  0073 Word	Public	CODE	   #22	22  #44	 44
+

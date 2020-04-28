@@ -1,0 +1,45 @@
+
+ Start  Stop   Length Name               Class
+
+ 00000H 0016DH 0016EH PROJ2_TEXT         CODE
+ 0016EH 002B6H 00149H _TEXT              CODE
+ 002C0H 00492H 001D3H _DATA              DATA
+ 004A0H 0069FH 00200H STACK              STACK
+
+
+Detailed map of segments
+
+ 0000:0000 016E C=CODE   S=PROJ2_TEXT     G=(none)  M=C:PROJ2.ASM ACBP=48
+ 0016:000E 00A2 C=CODE   S=_TEXT          G=(none)  M=GETDEC     ACBP=48
+ 0016:00B0 005B C=CODE   S=_TEXT          G=(none)  M=PUTDEC     ACBP=48
+ 0016:010C 0024 C=CODE   S=_TEXT          G=(none)  M=GETCHAR    ACBP=48
+ 0016:0130 000F C=CODE   S=_TEXT          G=(none)  M=PUTCRLF    ACBP=48
+ 0016:0140 0017 C=CODE   S=_TEXT          G=(none)  M=PUTSTR     ACBP=48
+ 002C:0000 018C C=DATA   S=_DATA          G=DGROUP  M=C:PROJ2.ASM ACBP=48
+ 002C:018C 0047 C=DATA   S=_DATA          G=DGROUP  M=GETDEC     ACBP=48
+ 002C:01E0 0200 C=STACK  S=STACK          G=DGROUP  M=C:PROJ2.ASM ACBP=74
+
+  Address         Publics by Name
+
+ 0016:00084 idle  CHKDIGIT
+ 0016:0010C       GETCHAR
+ 0016:0001D idle  GETDC2
+ 0016:0000E       GETDEC
+ 0016:00097 idle  IOERROR
+ 0016:00130       PUTCRLF
+ 0016:000B0       PUTDEC
+ 0016:00140       PUTSTR
+
+  Address         Publics by Value
+
+ 0016:00140       PUTSTR
+ 0016:00130       PUTCRLF
+ 0016:0010C       GETCHAR
+ 0016:000B0       PUTDEC
+ 0016:00097 idle  IOERROR
+ 0016:00084 idle  CHKDIGIT
+ 0016:0001D idle  GETDC2
+ 0016:0000E       GETDEC
+
+Program entry point at 0000:0000
+

@@ -1,0 +1,208 @@
+Turbo Assembler	 Version 3.1	    04/08/20 14:30:47	    Page 1
+c:ARYFLOAT.asm
+
+
+
+      1				     comment |
+      2				     ***************************************************************
+      3				     Programmer:
+      4				     Date      :  April	6th, 2020
+      5				     Course    :  CS221	Machine	Organization & Assembly	Language Programming
+      6				     Project   :
+      7
+      8
+      9				     Assembler :  Borland TASM 3.0
+     10				     File Name :  ARYFLT.ASM
+     11
+     12				     Input  :
+     13				     Output :
+     14				     Input Files : None
+     15				     Output Files: None
+     16
+     17				     PROCEDURES	CALLED:
+     18					 External procedures called: None
+     19					 Internal procedures called: Findsum, Findmax
+     20				     |
+     21				     ;****** BEGIN MAIN	PROGRAM	************************************
+     22					     DOSSEG
+     23					     .186
+     24					     .8087
+     25	0000				     .model large
+     26	0000				     .stack 200h
+     27
+     28				     ;****** MAIN PROGRAM DATA SEGMENT *****************************
+     29	0000				     .data
+     30	0000  ????????		     Sum      dd  ?
+     31	0004  ????????		     Max      dd  ?
+     32	0008  40000000 3FC00000	  +  Ary      dd  2.0,1.5,16.625,10.5,0.0,5.5,8.25,32.125,-8.5,-48.5
+     33	      41850000 41280000	  +
+     34	      00000000 40B00000	  +
+     35	      41040000 42008000	  +
+     36	      C1080000 C2420000
+     37	0030  ????????		     Sum2     dd  ?
+     38	0034  000A		     ASize    dw  10
+     39	0036  54 68 65 20 61 72	72+  SumMsg   db  'The array sum is: $'
+     40	      61 79 20 73 75 6D	20+
+     41	      69 73 3A 20 24
+     42	0049  54 68 65 20 6D 61	78+  MaxMsg   db  'The maximum element is: $'
+     43	      69 6D 75 6D 20 65	6C+
+     44	      65 6D 65 6E 74 20	69+
+     45	      73 3A 20 24
+     46
+     47				     ;****** MAIN PROGRAM CODE SEGMENT *****************************
+     48	0062				     .code
+     49	0000			     ProgramStart   PROC  NEAR
+     50
+     51				     ; Initialize ds register to hold data segment address
+     52	0000  B8 0000s			     mov     ax,@data
+     53	0003  8E D8			     mov     ds, ax
+     54
+     55				     ; Initialize numerical coprocessor
+     56	0005  9B DB E3			     finit
+     57				     ; Initialize top floating point stack register to zero
+Turbo Assembler	 Version 3.1	    04/08/20 14:30:47	    Page 2
+c:ARYFLOAT.asm
+
+
+
+     58	0008  9B D9 EE			     fldz
+     59
+     60				     ; Initialize registers for	the loop to sum	the array elements
+     61	000B  B9 0000			     mov     cx, 0	   ; initialize	cx to serve as element counter
+     62	000E  BB 0008r			     mov     bx, OFFSET	Ary ; set pointer to the start of array	Ary
+     63	0011  BE 0000			     mov     si, 0	  ; initialize index register to zero
+     64
+     65				     ; Index thru the array, adding the	value of each element to the
+     66				     ; top floating point stack	register
+     67
+     68	0014			     WHILE01:	; counter cx < size of array
+     69	0014  3B 0E 0034r		     cmp     cx,ASize
+     70	0018  7D 0B			     jge     ENDWHL01
+     71	001A			     DO01:   ; Add each	array element to the top floating point	register
+     72	001A  9B D8 84 0008r		     fadd    Ary[si]	  ; add	array element to top flt.pt. register
+     73	001F  83 C6 04			     add     si, 4	   ; increment index for next array element
+     74	0022  41			     inc     cx		  ; increment counter
+     75	0023  EB EF			     jmp     WHILE01	  ; jump to beginning of While loop
+     76	0025			     ENDWHL01:
+     77
+     78				     ; Pop and store floating point sum	of array elements into variable	Sum
+     79	0025  9B D9 1E 0000r		     fstp    Sum	  ; store and pop flt.pt.stack top register
+     80
+     81				     ; Push parameters on stack, call Findsum, pop parameters from stack
+     82	002A  68 0008r			     push    OFFSET Ary	  ; push onto stack as reference parameter
+     83	002D  FF 36 0034r		     push    ASize	  ; push onto stack as value parameter
+     84	0031  68 0030r			     push    OFFSET Sum2  ; push onto stack as reference parameter
+     85	0034  E8 0004			     call    Findsum	  ; Findsum(Ary,ASize,Sum2)
+     86
+     87				     ; Exit to operating system
+     88	0037  B4 4C			     mov     ah, 4ch	  ; DOS	terminate program fn #
+     89	0039  CD 21			     int     21h
+     90	003B			     ProgramStart    ENDP
+     91
+     92				     comment |
+     93				     ******* PROCEDURE HEADER **************************************
+     94				       PROCEDURE NAME :	Findsum
+     95				       PURPOSE :
+     96				       INPUT PARAMETERS	:
+     97				       OUTPUT PARAMETERS or RETURN VALUE:
+     98				       NON-LOCAL VARIABLES REFERENCED: None
+     99				       NON-LOCAL VARIABLES MODIFIED : None
+    100				       PROCEDURES CALLED : None
+    101				       CALLED FROM : Main program
+    102				     |
+    103				     ;****** SUBROUTINE	CODE SEGMENT ********************************
+    104	003B				     .code
+    105	003B			     Findsum PROC    NEAR
+    106				     ; Save registers and flags	on the stack
+    107	003B  60			     pusha
+    108	003C  9C			     pushf
+    109	003D  8B EC			     mov     bp,sp
+    110
+    111				     ; Copy the	parameter, which points	to first array element,	to bx
+    112	003F  8B 5E 18			     mov     bx, [bp + 24]   ; copy address of array to	bx
+    113
+    114				     ; Initialize the top floating point stack register	to 0
+Turbo Assembler	 Version 3.1	    04/08/20 14:30:47	    Page 3
+c:ARYFLOAT.asm
+
+
+
+    115	0042  9B D9 EE			     fldz
+    116				     ; Initialize the index register to	zero
+    117	0045  BE 0000			     mov     si, 0
+    118				     ; Initialize the counter register to zero
+    119	0048  B9 0000			     mov     cx, 0
+    120
+    121				     ; Omit this example that was provided to the students:
+    122				     ; Add next	array element to the top floating pt stack register
+    123				     ;	     fadd    dword ptr [bx][si]	 ; add array element to	top fl.pt.reg.
+    124
+    125				     ; Index thru the array, adding the	value of each element to the
+    126				     ; top floating point stack	register
+    127	004B			     WHILE02:	; counter cx < size of array
+    128	004B  3B 4E 16			     cmp     cx, [bp + 22]
+    129	004E  7D 09			     jge     ENDWHL02
+    130	0050			     DO02:   ; Add each	array element to the top floating point	register
+    131	0050  9B D8 00			     fadd    dword ptr [bx][si]	 ; add array element to	top flt.pt. reg
+    132	0053  83 C6 04			     add     si, 4	   ; increment index for next array element
+    133	0056  41			     inc     cx		  ; increment counter
+    134	0057  EB F2			     jmp     WHILE02	  ; jump to beginning of While loop
+    135	0059			     ENDWHL02:
+    136
+    137				     ; Store sum in actual parameter of	calling	module
+    138	0059  8B 5E 14			     mov     bx,[bp + 20]
+    139	005C  9B D9 1F			     fstp    dword ptr [bx]
+    140
+    141				     ; Restore the registers and return	to calling module
+    142	005F  9D			     popf
+    143	0060  61			     popa
+    144	0061  C2 0006			     ret     6
+    145	0064			     Findsum ENDP
+    146					     end     ProgramStart
+Turbo Assembler	 Version 3.1	    04/08/20 14:30:47	    Page 4
+Symbol Table
+
+
+
+
+Symbol Name		Type   Value			   Cref	(defined at #)
+
+??date			Text   "04/08/20"
+??filename		Text   "ARYFLOAT"
+??time			Text   "14:30:47"
+??version		Number 030A
+@32Bit			Text   0			   #25
+@CodeSize		Text   1			   #25
+@Cpu			Text   0103H			   #23	#24
+@DataSize		Text   1			   #25
+@FileName		Text   ARYFLOAT
+@Interface		Text   00h			   #25
+@Model			Text   5			   #25
+@WordSize		Text   2			   #23	#24  #29  #48  #104
+@code			Text   ARYFLOAT_TEXT		   #25	#25  #48  #104
+@curseg			Text   ARYFLOAT_TEXT		   #29	#48  #104
+@data			Text   DGROUP			   #25	52
+@stack			Text   DGROUP			   #25
+ASize			Word   DGROUP:0034		   #38	69  83
+Ary			Dword  DGROUP:0008		   #32	62  72	82
+DO01			Near   ARYFLOAT_TEXT:001A	   #71
+DO02			Near   ARYFLOAT_TEXT:0050	   #130
+ENDWHL01		Near   ARYFLOAT_TEXT:0025	   70  #76
+ENDWHL02		Near   ARYFLOAT_TEXT:0059	   129	#135
+Findsum			Near   ARYFLOAT_TEXT:003B	   85  #105
+Max			Dword  DGROUP:0004		   #31
+MaxMsg			Byte   DGROUP:0049		   #42
+ProgramStart		Near   ARYFLOAT_TEXT:0000	   #49	146
+Sum			Dword  DGROUP:0000		   #30	79
+Sum2			Dword  DGROUP:0030		   #37	84
+SumMsg			Byte   DGROUP:0036		   #39
+WHILE01			Near   ARYFLOAT_TEXT:0014	   #68	75
+WHILE02			Near   ARYFLOAT_TEXT:004B	   #127	 134
+
+Groups & Segments	Bit Size Align	Combine	Class	   Cref	(defined at #)
+
+ARYFLOAT_TEXT		16  0064 Word	Public	CODE	   #25	25  #48	 48  #104  104
+DGROUP			Group				   #25	25  52
+  STACK			16  0200 Para	Stack	STACK	   #26
+  _DATA			16  0062 Word	Public	DATA	   #25	#29
+

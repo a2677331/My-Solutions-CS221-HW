@@ -1,0 +1,22 @@
+
+ Start  Stop   Length Name               Class
+
+ 00000H 00076H 00077H R2_TEXT            CODE
+ 00080H 0009FH 00020H _DATA              DATA
+ 000A0H 0029FH 00200H STACK              STACK
+
+
+Detailed map of segments
+
+ 0000:0000 0077 C=CODE   S=R2_TEXT        G=(none)  M=C:R2.ASM   ACBP=48
+ 0008:0000 0020 C=DATA   S=_DATA          G=DGROUP  M=C:R2.ASM   ACBP=48
+ 0008:0020 0200 C=STACK  S=STACK          G=DGROUP  M=C:R2.ASM   ACBP=74
+
+  Address         Publics by Name
+
+
+  Address         Publics by Value
+
+
+Program entry point at 0000:0000
+
