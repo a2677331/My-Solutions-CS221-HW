@@ -1,0 +1,48 @@
+Warning: DOSSEG directive ignored in module C:PROJ1.ASM
+Warning: DOSSEG directive ignored in library file c:iofar.lib in module GETDEC
+Warning: DOSSEG directive ignored in library file iofar.lib in module GETDEC
+
+ Start  Stop   Length Name               Class
+
+ 00000H 0015EH 0015FH PROJ1_TEXT         CODE
+ 00160H 002A8H 00149H _TEXT              CODE
+ 002B0H 003E0H 00131H _DATA              DATA
+ 003F0H 005EFH 00200H STACK              STACK
+
+
+Detailed map of segments
+
+ 0000:0000 015F C=CODE   S=PROJ1_TEXT     G=(none) M=C:PROJ1.ASM ACBP=48
+ 0016:0000 00A2 C=CODE   S=_TEXT          G=(none)   M=GETDEC     ACBP=48
+ 0016:00A2 005B C=CODE   S=_TEXT          G=(none)   M=PUTDEC     ACBP=48
+ 0016:00FE 0024 C=CODE   S=_TEXT          G=(none)   M=GETCHAR    ACBP=48
+ 0016:0122 000F C=CODE   S=_TEXT          G=(none)   M=PUTCRLF    ACBP=48
+ 0016:0132 0017 C=CODE   S=_TEXT          G=(none)   M=PUTSTR     ACBP=48
+ 002B:0000 00E9 C=DATA   S=_DATA          G=DGROUP  M=C:PROJ1.ASM ACBP=48
+ 002B:00EA 0047 C=DATA   S=_DATA          G=DGROUP  M=GETDEC     ACBP=48
+ 002B:0140 0200 C=STACK  S=STACK          G=DGROUP  M=C:PROJ1.ASM ACBP=74
+
+  Address         Publics by Name
+
+ 0016:00076 idle  CHKDIGIT
+ 0016:000FE       GETCHAR
+ 0016:0000F idle  GETDC2
+ 0016:00000       GETDEC
+ 0016:00089 idle  IOERROR
+ 0016:00122       PUTCRLF
+ 0016:000A2       PUTDEC
+ 0016:00132       PUTSTR
+
+  Address         Publics by Value
+
+ 0016:00132       PUTSTR
+ 0016:00122       PUTCRLF
+ 0016:000FE       GETCHAR
+ 0016:000A2       PUTDEC
+ 0016:00089 idle  IOERROR
+ 0016:00076 idle  CHKDIGIT
+ 0016:0000F idle  GETDC2
+ 0016:00000       GETDEC
+
+Program entry point at 0000:0000
+
