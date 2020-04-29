@@ -4,8 +4,12 @@ INCLUDELIB iofar
 	.186
 	.model large
 	.stack 200h
-
-;****** MAIN PROGRAM DATA SEGMENT *****************************
+⚠️注意：
+是我自己的版本
+用了先push array在bp前，再sort这些copied版本的array，
+没有用by reference。
+;的方法。
+****** MAIN PROGRAM DATA SEGMENT *****************************
 	 .data
 Prompt1	 db  'Enter integers #$'
 Prompt2  db  ': $'
@@ -19,7 +23,7 @@ Count	 dw  1          ; input counter
 MsgEcho  db  'The input was:$'
 MsgUnsorted	 db  'Unsorted List $'
 MsgSorted	 db  'Sorted List $'
-Space1    db ' $' ; ⚠️ 注意加$号！
+Space1    db ' $' ;
 Space2    db '       $'
 
 ;****** MAIN PROGRAM ️CODE SEGMENT *****************************
@@ -116,14 +120,20 @@ ENDWHL01:
 S0:
     push [arr1+si]
     pop  [arr2+si]
-    add si,2    ; ⚠️ 容易忽略！
+    add si,2    ;
     loop S0
 
 ; push number of items in the array onto stack
 ; and push array address onto stack
     push iNum           ; push number of items in arr1
-    push OFFSET arr1    ; push arr1 address
-    call    InsertSort  ; sort arr1
+    mov cx,10
+    sub si,si
+V:
+
+    push [arr1+si]
+    add si,2
+    loop V
+    call    InsertSort  ; sort arr1   ⚠️注意⚠️
 
 ; Print label at the top of each column
 	mov	dx,OFFSET MsgUnsorted ; set pointer to MsgUnsorted message
@@ -167,7 +177,7 @@ ProgramStart	ENDP
 comment |
 ******* PROCEDURE HEADER **************************************
   PROCEDURE NAME : InsertSort
-  PURPOSE :  To sort 10 integers using insertion sort
+  PURPOSE :  To sort 10 integers using Insertion Sort in Ascending Order
 	        Returns: None
   INPUT PARAMETERS
             pass by value, number of items in an array
@@ -187,50 +197,51 @@ InsertSort PROC    near
 	push bx
 	push si
 	push di
-    ; bp + 6: the number of items in the array
-    ; bp + 4: array
+    ; bp + 24: the number of items in the array
+    ; bp + 22 ~ bp + 4: array
 
-    ; setting CX as the actual size of the array ⚠️ 容易忽略
-    mov ax,[bp+6] ; setting ax = 10
-    mov cx,2       ; 2 byte per word
-    mul cx
-    mov cx,ax
-
-    ; 'i' and 'j' increase by 2 due to word size. ⚠️ 容易忽略
-    mov si,2       ; SI is i and i = 2
-    sub di,di      ; DI is j, setting it to 0
-    mov bx,[bp+4]  ; copy address of arr1 into BX, BX is the array now.
+    mov cx,[bp+24] ; length
+    mov ax,1 ; i
+    mov di,-2 ; i index
+    ; ⚠️ 用了很久时间弄懂，如果用[bp+22+di]，index之间是相加的，那就di初始值为-2，因为第一位为【24-2】=【22】
+    mov si,0 ; j index
 
 ; Outter loop begins here:
  OUTLOOP:     ; i < len
-    cmp si,cx
+    cmp ax,cx
     jge ENDOUTLOOP ; if i >= len, end outter loop
 
-    mov dx,[bx+si] ; dx is the key (key = arr[i])
+    mov dx,[bp+22+di] ; dx is the key (key = arr[i])
 
-    mov di,si
-    sub di,2    ; bx is j = i - 1
-    add si,2    ; i++
+    mov bx,ax  ; bx is j = i - 1
+    dec bx
 
-    push ax     ; need to use ax in inner loop, store first
+    push di    ; j index + 2
+    pop si
+    add si,2    ; first time, si = 0
+
 ; Inner loop begins here:
 INLOOP:	    ; (j >= 0 && arr[j] > key)
-    cmp di,0 ;  if j < 0, exit INLOOP
+    cmp bx,0 ;  if j < 0, exit INLOOP
     jnge ENDINLOOP
 
-    cmp [bx+di],dx ; if arr[j] <= key, exit INLOOP
+    cmp [bp+22+si],dx ; if arr[j] <= key, exit INLOOP
     jle ENDINLOOP
 
-    mov ax,[bx+di] ; arr[j + 1] = arr [j]
-    mov [bx+di+2],ax
+    push [bp+22+si] ; arr[j + 1] = arr [j]
+    pop [bp+20+si]  ; ⚠️
 
-    sub di,2   ; j--
+    dec bx   ; j--
+    add si,2
 
     jmp INLOOP ; loop back to INLOOP
 
 ENDINLOOP:
-    mov [bx+di+2],dx ; array[j+1] = key
-    pop ax  ; restore ax before outter loop begins
+    mov [bp+20+si],dx ; array[j+1] = key ⚠️, first time finally si becomes 2, should point to [22]
+
+    inc ax    ; i++
+    sub di,2 ; i index
+
     jmp OUTLOOP ; back to Outter Loop
 
 ENDOUTLOOP:
@@ -257,9 +268,9 @@ comment |
 |
 ;****** SUBROUTINE DATA SEGMENT ********************************
 	.data
-Msgg1	 db  'Program:    Insortion Sort for Ten Integers $'
+Msgg1	 db  'Program:    Insortion Sort for Ten Integers in Ascending Order $'
 Msgg2	 db  'Programmer: Jian Zhong $'
-Msgg3	 db  'Date:       March 24, 2020 $'
+Msgg3	 db  'Date:       March 25, 2020 $'
 
 ;****** SUBROUTINE CODE SEGMENT ********************************
 	.code
