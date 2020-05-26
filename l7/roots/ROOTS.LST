@@ -1,4 +1,4 @@
-Turbo Assembler	 Version 4.1	    04/02/20 23:35:25	    Page 1
+Turbo Assembler	 Version 3.1	    04/29/20 00:22:59	    Page 1
 c:roots.asm
 
 
@@ -60,7 +60,7 @@ c:roots.asm
      55	0005  0E E8 0005 90		     call    far ptr roots    ;	??? why	far
      56
      57	000A  B4 4C			     mov     ah,4ch
-Turbo Assembler	 Version 4.1	    04/02/20 23:35:25	    Page 2
+Turbo Assembler	 Version 3.1	    04/29/20 00:22:59	    Page 2
 c:roots.asm
 
 
@@ -122,14 +122,14 @@ c:roots.asm
     112	007F			     roots	     endp
     113
     114
-Turbo Assembler	 Version 4.1	    04/02/20 23:35:25	    Page 3
+Turbo Assembler	 Version 3.1	    04/29/20 00:22:59	    Page 3
 c:roots.asm
 
 
 
     115
     116					     end     ProgramStart
-Turbo Assembler	 Version 4.1	    04/02/20 23:35:25	    Page 4
+Turbo Assembler	 Version 3.1	    04/29/20 00:22:59	    Page 4
 Symbol Table
 
 
@@ -137,16 +137,16 @@ Symbol Table
 
 Symbol Name		Type   Value			   Cref	(defined at #)
 
-??date			Text   "04/02/20"
+??date			Text   "04/29/20"
 ??filename		Text   "roots	"
-??time			Text   "23:35:25"
-??version		Number 040A
+??time			Text   "00:22:59"
+??version		Number 030A
 @32Bit			Text   0			   #22
 @CodeSize		Text   1			   #22
 @Cpu			Text   0103H			   #24	#25
 @DataSize		Text   1			   #22
 @FileName		Text   roots
-@Interface		Text   000h			   #22
+@Interface		Text   00h			   #22
 @Model			Text   5			   #22
 @WordSize		Text   2			   #24	#25  #29  #46
 @code			Text   roots_TEXT		   #22	#22  #46

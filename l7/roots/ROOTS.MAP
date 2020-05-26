@@ -1,5 +1,3 @@
-Warning: DOSSEG directive ignored in module C:ROOTS.ASM
-Warning: DOSSEG directive ignored in library file c:iofar.lib in module GETDEC
 
  Start  Stop   Length Name               Class
 
@@ -10,9 +8,15 @@ Warning: DOSSEG directive ignored in library file c:iofar.lib in module GETDEC
 
 Detailed map of segments
 
- 0000:0000 007F C=CODE   S=ROOTS_TEXT     G=(none) M=C:ROOTS.ASM ACBP=48
+ 0000:0000 007F C=CODE   S=ROOTS_TEXT     G=(none)  M=C:ROOTS.ASM ACBP=48
  0008:0000 0026 C=DATA   S=_DATA          G=DGROUP  M=C:ROOTS.ASM ACBP=48
  0008:0030 0200 C=STACK  S=STACK          G=DGROUP  M=C:ROOTS.ASM ACBP=74
+
+  Address         Publics by Name
+
+
+  Address         Publics by Value
+
 
 Program entry point at 0000:0000
 

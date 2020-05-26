@@ -1,7 +1,7 @@
 comment |
 ***************************************************************
 Programmer:  Jian Zhong
-Date      :  Apr 27th, 2020
+Date      :  Apr 30th, 2020
 Course    :  CS221 - Machine Organization & Assembly Lang. Programming
 Project   :  This program uses a recursive procedure to
                   compute the nth value of the Fibonacci series
@@ -27,11 +27,12 @@ PROCEDURES CALLED:
 
 ;****** MAIN PROGRAM DATA SEGMENT *****************************
      .data
-PromptFibNum    db  'Please enter a Number: $'
-PromptTryAgain  db  '*** Input should be integer greater than 0 ***, please try again: $'
-NumEcho         db  'The number you entered was:$'
-FibEcho         db  'The value of Fibonacci series is $'
+PromptFibNum    db  'Please enter an integer for nth value of Fibonacci series: $'
+PromptTryAgain  db  '*** Input should be integer >= 0 ***, please try again: $'
+NumEcho         db  'The integer you entered was:$'
+FibEcho         db  'The Fibonacci series is shown as below:$'
 Num             dw  ? ; Number entered by user for computing Fib sequence
+i               dw  0 ; index of Fibonacci series
 
 
 ;****** MAIN PROGRAM CODE SEGMENT *****************************
@@ -46,57 +47,72 @@ ProgramStart   PROC  NEAR
     mov ds,ax
 
 ; Call procedure Greet to print introductory messages to the user
-    call    Greet               ; void Greet()
+    call    Greet                 ; void Greet()
 
 ; cout << "Please enter a Number for computing Fib sequence: ";
 WHILE_01:
-    mov dx,OFFSET PromptFibNum  ; point to the PromptFibNum
-    mov ah,9                    ; DOS print string function #
-    int 21h                     ; print string
+    mov dx,OFFSET PromptFibNum    ; point to the PromptFibNum
+    mov ah,9                      ; DOS print string function #
+    int 21h                       ; print string
 
 ; Fetch input integer from user and store into "Num" para
-    call    far ptr GetDec      ; get integer from keyboard, return in ax
-    call    far ptr PutCrLf     ; /n
-    mov Num,ax                  ; load user input in Num
+    call    far ptr GetDec        ; get integer from keyboard, return in ax
+    call    far ptr PutCrLf       ; /n
+    mov Num,ax                    ; load user input in Num
     
 ; Print to verify the number was correctly input:
     ; cout << ''The number you entered was: '';
-    mov	dx,OFFSET NumEcho  ; point to the NumEcho mesg
-    mov	ah,9	           ; DOS print string function #
-    int	21h	               ; print string
+    mov	dx,OFFSET NumEcho         ; point to the NumEcho mesg
+    mov	ah,9	                  ; DOS print string function #
+    int	21h	                      ; print string
     ; cout << Num;
-    mov	ax,Num             ; put parameter for subroutine PutDec in ax
-    call	PutDec         ; print the decimal integer in ax
+    mov	ax,Num                    ; put parameter for subroutine PutDec in ax
+    call	PutDec                ; print the decimal integer in ax
     call    PutCrLf
     call    PutCrLf
 
 ; Verify if the input is negative:
-    cmp Num, 0           ; while (Num < 0)
-    jl      TryAgain_01  ; if Num < 0, prompt user to try again
-    jmp     ENDWHILE_01  ; valid input, end while loop
+    cmp Num, 0                    ; while (Num < 0)
+    jl      TryAgain_01           ; if Num < 0, prompt user to try again
+    jmp     ENDWHILE_01           ; valid input, end while loop
 
 ; Num < 0:
 TryAgain_01:
-    mov dx,OFFSET PromptTryAgain   ; set pointer to PromptTryAgain mesg
-    mov ah,9                       ; DOS print string function #
-    int 21h                        ; print string
+    mov dx,OFFSET PromptTryAgain  ; set pointer to PromptTryAgain mesg
+    mov ah,9                      ; DOS print string function #
+    int 21h                       ; print string
     call    PutCrLf
     call    PutCrLf
-    jmp     WHILE_01        ; jump back to try again
+    jmp     WHILE_01              ; jump back to try again
     
-ENDWHILE_01:                ; End of WHILE_01 LOOP
+ENDWHILE_01:                      ; End of WHILE_01 LOOP
 
-   ; cout << "The value of Fibonacci series is ";
-   mov	dx,OFFSET FibEcho   ; point to the FibEcho mesg
-   mov	ah,9	            ; DOS print string function #
-   int	21h	                ; print string
+; cout << "The Fibonacci Series is ";
+    mov	dx,OFFSET FibEcho         ; point to the FibEcho mesg
+    mov	ah,9	                  ; DOS print string function #
+    int	21h	                      ; print string 
+    call    far ptr PutCrLf       ; /n
 
-   ; cout << Find_Fib(Num) << endl;
-   push Num                 ; pass Num parameter for Find_Fib PROC
-   call    Find_Fib         ; call Find_Fib PROC to compute Fibonacci Series
-   mov ax,cx                ; store cx(result) into ax
-   call	   PutDec           ; print the decimal integer in ax
-   call    PutCrLf          ; /n
+; Print the entire Fibonacci Series:
+; ****************************************
+; Note: if the input is 7, 
+; the series will display from f(0) to f(7), 
+; total is 8 numbers in the Fib series.
+; ****************************************
+; for (int i = 0; i <= Num; i++);
+mov dx,Num                        ; load Num into dx
+FOR01:
+    cmp i,dx                      ; i <= Num ?
+    jg END_FOR01                  ; i > Num, end the loop
+    ; cout << find_Fib(i) << " ";
+    push i                        ; pass Num parameter for Find_Fib PROC
+    call    Find_Fib              ; call Find_Fib PROC to compute Fib Series
+    mov ax,cx                     ; store cx(result) into ax
+    call	 PutDec               ; print the result in ax
+    inc i                         ; i++
+    jmp FOR01
+END_FOR01:
+    call    far ptr PutCrLf       ; /n
 
     mov    ah,4ch    ; DOS terminate program fn #
     int    21h
@@ -182,9 +198,9 @@ comment |
 |
 ;****** SUBROUTINE DATA SEGMENT ********************************
      .data
-Msgg1     db  '    Welcome to Fibonacci Number Finding Program!$'
+Msgg1     db  '    Welcome to Fibonacci Series Finding Program!$'
 Msgg2     db  '    Programmer: Jian Zhong $'
-Msgg3     db  '    Date:  27th Apr, 2020 $'
+Msgg3     db  '    Date:  30th Apr, 2020 $'
 
 ;****** SUBROUTINE CODE SEGMENT ********************************
     .code

@@ -1,4 +1,4 @@
-Turbo Assembler	 Version 3.1	    04/20/20 14:02:15	    Page 1
+Turbo Assembler	 Version 3.1	    05/15/20 15:09:25	    Page 1
 c:recfac.asm
 
 
@@ -36,217 +36,37 @@ c:recfac.asm
      31
      32				     ;****** MAIN PROGRAM DATA SEGMENT *****************************
      33	0000				      .data
-     34	0000  45 6E 74 65 72 20	61+  Promptb  db  'Enter an integer: $'
-     35	      6E 20 69 6E 74 65	67+
-     36	      65 72 3A 20 24
-     37	0013  54 68 65 20 66 61	63+  Announce db  'The factorial of the	number is: $'
-     38	      74 6F 72 69 61 6C	20+
-     39	      6F 66 20 74 68 65	20+
-     40	      6E 75 6D 62 65 72	20+
-     41	      69 73 3A 20 24
-     42	0034  ????		     M	      dw  ? ;	⚠️
-     43	0036  ????		     Result   dw  ?
-     44
-     45				     ;****** MAIN PROGRAM CODE SEGMENT *****************************
-     46	0038				     .code
-     47					     extrn   PutCrLf: PROC
-     48					     extrn   GetDec: PROC, PutDec: PROC
-     49
-     50	0000			     ProgramStart   PROC  NEAR
-     51				     ; Initialize ds register to hold data segment address
-     52	0000  B8 0000s			     mov     ax,@data
-     53	0003  8E D8			     mov     ds,ax
-     54
-     55				     ; call subroutine to print	a greeting to the user
-     56	0005  E8 006A			     call    Greet	 ; void	Greet()；	  ⚠️⚠️ call ⚠️⚠️️!!!!!!!!!!
-     57
-Turbo Assembler	 Version 3.1	    04/20/20 14:02:15	    Page 2
+     34	0000  41 42 43		     A1	Db 'ABC'
+     35	0003  58 59 5A		     A2	db 'XYZ'
+     36
+     37				     ;****** MAIN PROGRAM CODE SEGMENT *****************************
+     38	0006				     .code
+     39					     extrn   PutCrLf: PROC
+     40					     extrn   GetDec: PROC, PutDec: PROC
+     41
+     42	0000			     ProgramStart   PROC  NEAR
+     43				     ; Initialize ds register to hold data segment address
+     44	0000  B8 0000s			     mov     ax,@data
+     45	0003  8E D8			     mov     DS,ax
+     46	0005  8C DB			     mov bx,DS
+     47	0007  8E C3			     mov es,BX
+     48
+     49	0009  33 F6			     XOR SI,si
+     50	000B  33 FF			     XOR DI,DI
+     51
+     52	000D  BE 0000r			     LEA SI,A1
+     53	0010  BF 0003r			     LEA DI,A2
+     54	0013  FC			     CLD
+     55	0014  A4			     MOVSB
+     56
+     57				     end     ProgramStart
+Turbo Assembler	 Version 3.1	    05/15/20 15:09:25	    Page 2
 c:recfac.asm
 
 
 
-     58				     ; prompt user for an integer and input the	integer	from keyboard
-     59	0008  BA 0000r			     mov     dx,OFFSET Promptb	; point	to the Prompt mesg
-     60	000B  B4 09			     mov     ah,9	  ; DOS	print string function #
-     61	000D  CD 21			     int     21h	  ; print string
-     62				     ; get input integer from user for which factorial will be computed
-     63	000F  0E E8 0000e		     call    far ptr GetDec  ; get integer from	keyboard, return in ax
-     64	0013  0E E8 0000e		     call    far ptr PutCrLf
-     65
-     66				     ; store input integer in variable M
-     67	0017  A3 0034r			     mov     M,ax	  ; Store in location for variable M
-     68
-     69				     ; push parameters on stack, call RecFact, pop parameters from stack
-     70	001A  FF 36 0034r		     push    M		  ; push onto stack as Value parameter
-     71	001E  68 0036r			     push    OFFSET Result ; push address of parameter onto stack
-     72	0021  E8 0016			     call    RecFact	; void RecFact(M,Result) ⚠️⚠️ call ⚠️⚠️️!!!!!!!!!!
-     73
-     74				     ; print message announcing	factorial result
-     75	0024  BA 0013r			     mov     dx,OFFSET Announce	 ; point to the	result message
-     76	0027  B4 09			     mov     ah,9	  ; DOS	print string function #
-     77	0029  CD 21			     int     21h	  ; print string
-     78
-     79				     ; print the result	of computing the factorial
-     80	002B  A1 0036r			     mov     ax,Result	  ; prepare parameter for PutDec in ax
-     81	002E  0E E8 0000e		     call    far ptr PutDec  ; Print the decimal integer in ax
-     82	0032  0E E8 0000e		     call    far ptr PutCrLf
-     83
-     84	0036  B4 4C			     mov     ah,4ch	  ; DOS	terminate program fn #
-     85	0038  CD 21			     int     21h
-     86	003A			     ProgramStart    ENDP
-     87
-     88				     comment |
-     89				     ******* PROCEDURE HEADER **************************************
-     90				       PROCEDURE NAME :	RecFact
-     91				       PURPOSE :  Computes the Factorial of N, for positive N;
-     92						  Returns 0 if N < 0;  returns 1 if N =	0.
-     93						  This procedure uses a	recursive algorithm.
-     94				       INPUT PARAMETERS	:
-     95						  Pass by value	parameter - N
-     96				       OUTPUT PARAMETERS:
-     97						  Pass by reference parameter -	Fact, the factorial of N
-     98				       NON-LOCAL VARIABLES REFERENCED: None
-     99				       NON-LOCAL VARIABLES MODIFIED :None
-    100				       PROCEDURES CALLED :
-    101					     FROM iofar.lib: PutCrLf, GetDec
-    102				       CALLED FROM : Main Program and RecFact
-    103				     |
-    104				     ;****** SUBROUTINE	CODE SEGMENT ********************************				    +
-    105				     ; RecFact call!!⚠️
-    106	003A				     .code
-    107	003A			     RecFact PROC    NEAR
-    108	003A  60			     pusha
-    109	003B  9C			     pushf
-    110	003C  8B EC			     mov     bp, sp
-    111
-    112				     ; IF01 N <	0
-    113	003E  8B 4E 16			     mov     cx,[bp+22]
-    114	0041  83 F9 00			     cmp     cx, 0
-Turbo Assembler	 Version 3.1	    04/20/20 14:02:15	    Page 3
-c:recfac.asm
-
-
-
-    115	0044  7D 06			     jge     ELSE01  ; ⚠️ if N >= 0,      ;to line 113
-    116				     ; THEN01	return 0  since	N < 0
-    117	0046  B8 0000			     mov     ax, 0
-    118	0049  EB 1D 90			     jmp     ENDIF01			 ;to line 137: Base Case1
-    119
-    120	004C			     ELSE01:
-    121				     ;	 IF02 N	= 0 or N = 1
-    122	004C  83 F9 01			     cmp     cx, 1
-    123	004F  7F 06			     jg	     ELSE02   ;	⚠️ if N > 1		 ;to line 121
-    124				     ;	 THEN02	 return	1,  since N = 0	or N = 1
-    125	0051  B8 0001			 mov	 ax, 1
-    126	0054  EB 11 90			     jmp	 ENDIF02		     ;to line 134: Base	Case2
-    127
-    128	0057			     ELSE02:	 ; (since N > 1)
-    129					 ;   recursively call RecFact(N-1,Fact)
-    130	0057  49			     dec     cx	     ; cx holds	N-1 now
-    131	0058  51			     push    cx	     ; push value parameter N, less 1, onto stack
-    132	0059  FF 76 14			     push    [bp+20] ; push the	reference parameter onto stack
-    133	005C  E8 FFDB			     call    RecFact			 ; recursive call ⚠️⚠️⚠️
-    134
-    135					 ;  return N * Fact, where Fact	is the factorial of N-1;
-    136					 ;  in other words, return N * factorial(N-1)
-    137	005F  8B 5E 14			     mov	 bx,[bp+20] ; copy reference parameter (address) to bx,	⚠️ CAN I USE MOV+
-    138				     AX, [BP + 20]? no,	it just	moves data of position of BP+20	into ax,
-    139	0062  8B 07			     mov	 ax,[bx]    ; copy value of the	parameter to ax, ⚠️	what we	want is	the +
-    140				     data of address of	BP+20's	DATA.
-    141	0064  F7 6E 16			     imul    word ptr[bp+22] ; ⚠️ ax([bx]) * [bp+22], and store in AX
-    142
-    143	0067			     ENDIF02: ;	⚠️label ENDIF02
-    144	0067  90			     nop
-    145
-    146	0068			     ENDIF01:
-    147				     ; pass output parameter back to calling module, namely the	factorial of N
-    148	0068  8B 5E 14			     mov	 bx,[bp+20] ; copy reference parameter to bx，⚠️ finding the result    +
-    149				     address
-    150	006B  89 07			     mov	 [bx],ax	; assign factorial ⚠️result	to that	memory location	aobve
-    151									; of the ⚠️	reference parameter in the data	segment
-    152
-    153				     ; restore registers and return having passed the result back
-    154	006D  9D			     popf
-    155	006E  61			     popa
-    156	006F  C2 0004			     ret    4
-    157	0072			     RecFact ENDP										  ; +
-    158				     RecFact call ends!!⚠️
-    159
-    160				     comment |
-    161				     ******* PROCEDURE HEADER **************************************
-    162				       PROCEDURE NAME :	Greet
-    163				       PURPOSE :  To print an initial greeting to the user
-    164				       INPUT PARAMETERS	: None
-    165				       OUTPUT PARAMETERS or RETURN VALUE:  None
-    166				       NON-LOCAL VARIABLES REFERENCED: None
-    167				       NON-LOCAL VARIABLES MODIFIED :None
-    168				       PROCEDURES CALLED :
-    169					     FROM iofar.lib: PutStr, PutCrLf
-    170				       CALLED FROM : main program
-    171				     |
-Turbo Assembler	 Version 3.1	    04/20/20 14:02:15	    Page 4
-c:recfac.asm
-
-
-
-    172				     ;****** SUBROUTINE	DATA SEGMENT ********************************
-    173	0072				      .data
-    174	0038  20 20 20 20 20 57	65+  Msgg1    db  '	Welcome	to the recursive factorial program  $'
-    175	      6C 63 6F 6D 65 20	74+
-    176	      6F 20 74 68 65 20	72+
-    177	      65 63 75 72 73 69	76+
-    178	      65 20 66 61 63 74	6F+
-    179	      72 69 61 6C 20 70	72+
-    180	      6F 67 72 61 6D 20	20+
-    181	      24
-    182	006A  20 20 20 20 20 50	72+  Msgg2    db  '	Programmer: XXXXXXXXXXXX $'
-    183	      6F 67 72 61 6D 6D	65+
-    184	      72 3A 20 58 58 58	58+
-    185	      58 58 58 58 58 58	58+
-    186	      58 20 24
-    187	0089  20 20 20 20 20 44	61+  Msgg3    db  '	Date:  26th Feb, 2020 $'
-    188	      74 65 3A 20 20 32	36+
-    189	      74 68 20 46 65 62	2C+
-    190	      20 32 30 32 30 20	24
-    191
-    192				     ;****** SUBROUTINE	CODE SEGMENT ********************************
-    193	00A5				     .code
-    194	0072				 Greet	     PROC    near ; ⚠️ default is near。
-    195
-    196				     ; Save registers on the stack
-    197	0072  60			     pusha
-    198	0073  9C			     pushf
-    199
-    200				     ; Print name of program
-    201	0074  BA 0038r			     mov     dx,OFFSET Msgg1 ; set pointer to 1st greeting message
-    202	0077  B4 09			     mov     ah,9	     ; DOS print string	function #
-    203	0079  CD 21			     int     21h	     ; print string
-    204	007B  0E E8 0000e		     call    PutCrLf
-    205
-    206				     ; Print name of programmer
-    207	007F  BA 006Ar			     mov     dx,OFFSET Msgg2 ; set pointer to 2nd greeting message
-    208	0082  B4 09			     mov     ah,9	     ; DOS print string	function #
-    209	0084  CD 21			     int     21h	     ; print string
-    210	0086  0E E8 0000e		     call    PutCrLf
-    211
-    212				     ; Print date
-    213	008A  BA 0089r			     mov     dx,OFFSET Msgg3 ; set pointer to 3rd greeting message
-    214	008D  B4 09			     mov     ah,9	     ; DOS print string	function #
-    215	008F  CD 21			     int     21h	     ; print string
-    216	0091  0E E8 0000e		     call    PutCrLf
-    217	0095  0E E8 0000e		     call    PutCrLf
-    218
-    219				     ; Restore registers from stack
-    220	0099  9D			     popf
-    221	009A  61			     popa
-    222
-    223				     ; Return to caller	module
-    224	009B  C3			     ret
-    225	009C				 Greet	     ENDP
-    226
-    227
-    228				     end     ProgramStart
-Turbo Assembler	 Version 3.1	    04/20/20 14:02:15	    Page 5
+*Warning* c:recfac.asm(57) Open	procedure: ProgramStart
+Turbo Assembler	 Version 3.1	    05/15/20 15:09:25	    Page 3
 Symbol Table
 
 
@@ -254,9 +74,9 @@ Symbol Table
 
 Symbol Name		Type   Value			   Cref	(defined at #)
 
-??date			Text   "04/20/20"
+??date			Text   "05/15/20"
 ??filename		Text   "recfac	"
-??time			Text   "14:02:15"
+??time			Text   "15:09:25"
 ??version		Number 030A
 @32Bit			Text   0			   #29
 @CodeSize		Text   1			   #29
@@ -265,33 +85,28 @@ Symbol Name		Type   Value			   Cref	(defined at #)
 @FileName		Text   recfac
 @Interface		Text   00h			   #29
 @Model			Text   5			   #29
-@WordSize		Text   2			   #28	#33  #46  #106	#173  #193
-@code			Text   recfac_TEXT		   #29	#29  #46  #106	#193
-@curseg			Text   recfac_TEXT		   #33	#46  #106  #173	 #193
-@data			Text   DGROUP			   #29	52
+@WordSize		Text   2			   #28	#33  #38
+@code			Text   recfac_TEXT		   #29	#29  #38
+@curseg			Text   recfac_TEXT		   #33	#38
+@data			Text   DGROUP			   #29	44
 @stack			Text   DGROUP			   #29
-Announce		Byte   DGROUP:0013		   #37	75
-ELSE01			Near   recfac_TEXT:004C		   115	#120
-ELSE02			Near   recfac_TEXT:0057		   123	#128
-ENDIF01			Near   recfac_TEXT:0068		   118	#146
-ENDIF02			Near   recfac_TEXT:0067		   126	#143
-GetDec			Far    recfac_TEXT:----	Extern	   #48	63
-Greet			Near   recfac_TEXT:0072		   56  #194
-M			Word   DGROUP:0034		   #42	67  70
-Msgg1			Byte   DGROUP:0038		   #174	 201
-Msgg2			Byte   DGROUP:006A		   #182	 207
-Msgg3			Byte   DGROUP:0089		   #187	 213
-ProgramStart		Near   recfac_TEXT:0000		   #50	228
-Promptb			Byte   DGROUP:0000		   #34	59
-PutCrLf			Far    recfac_TEXT:----	Extern	   #47	64  82	204  210  216  217
-PutDec			Far    recfac_TEXT:----	Extern	   #48	81
-RecFact			Near   recfac_TEXT:003A		   72  #107  133
-Result			Word   DGROUP:0036		   #43	71  80
+A1			Byte   DGROUP:0000		   #34	52
+A2			Byte   DGROUP:0003		   #35	53
+GetDec			Far    recfac_TEXT:----	Extern	   #40
+ProgramStart		Near   recfac_TEXT:0000		   #42	57
+PutCrLf			Far    recfac_TEXT:----	Extern	   #39
+PutDec			Far    recfac_TEXT:----	Extern	   #40
 
 Groups & Segments	Bit Size Align	Combine	Class	   Cref	(defined at #)
 
-DGROUP			Group				   #29	29  52
+DGROUP			Group				   #29	29  44
   STACK			16  0200 Para	Stack	STACK	   #30
-  _DATA			16  00A5 Word	Public	DATA	   #29	#33  #173
-recfac_TEXT		16  009C Word	Public	CODE	   #29	29  #46	 46  #106  106	#193  193
+  _DATA			16  0006 Word	Public	DATA	   #29	#33
+recfac_TEXT		16  0015 Word	Public	CODE	   #29	29  #38	 38
+Turbo Assembler	 Version 3.1	    05/15/20 15:09:25	    Page 4
+Error Summary
+
+
+
+*Warning* c:recfac.asm(57) Open	procedure: ProgramStart
 
