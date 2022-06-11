@@ -146,12 +146,12 @@ IF03:            ; if (pFinal == pStart), prompt PromptEcho3 mesg
     jmp     WHILE03
 ENDWHILE03: nop ; end of WHILE03 LOOP
 
-; H(counter, num, pStart, pFinal);
-    push    OFFSET counter      ; push Counter by Reference
-    push    num                 ; push num by Value
-    push    pStart              ; push pStart by Value
-    push    pFinal              ; push pFinal by Value
-    call    H                   ; Function call
+; h(counter, num, pstart, pfinal);
+    push    OFFSET counter      ; pass Counter by Reference
+    push    num                 ; pass num by Value
+    push    pStart              ; pass pStart by Value
+    push    pFinal              ; pass pFinal by Value
+    call    H                   ; Function call H(counter, num, pStart, pFinal) 
 
     mov    ah,4ch    ; DOS terminate program fn #
     int    21h
@@ -160,7 +160,8 @@ ProgramStart    ENDP ; end of main program
 comment |
 ******* PROCEDURE HEADER **************************************
   PROCEDURE NAME : H
-  PURPOSE :  Compute and specify the steps required to move the disks, after n is input by the user.
+  PURPOSE :  Compute and specify the steps required to move the disks,
+             after n is input by the user.
          Print movments message and counter++ if n == 1
          This procedure uses a recursive algorithm.
   INPUT PARAMETERS :
@@ -248,7 +249,7 @@ ELSE01:
     push    dx          ; pass n - 1
     push    [bp+22]     ; pass s
     push    ax          ; pass 6 - s - f
-    call    H           ; call H procedure
+    call    H           ; call H procedure recursively
 
     ; Store 6 - s - f and n - 1 for later Caller
     push ax ; store 6 - s - f in ax
@@ -285,18 +286,19 @@ ELSE01:
     int 21h                ; print string
     ; Print f parameter
     mov ax, [bp+20]        ; f is in [bp+20]
-    call    PutDec         ; print integer in ax
-    call    PutCrLf        ; /n
+    call    putdec         ; print integer in ax
+    call    putcrlf        ; /n
 
     ; Restore 6 - s - f and n - 1 for H(counter, n - 1, 6 - s - f, f)
     pop dx  ; restore n - 1 in dx
     pop ax  ; restore 6 - s - f in ax
-; H(counter, n - 1, 6 - s - f, f);
+
+    ; H(counter, n - 1, 6 - s - f, f);
     push    [bp+26]     ; pass counter by reference
     push    dx          ; pass n - 1
     push    ax          ; pass 6 - s - f
     push    [bp+20]     ; pass f
-    call    H           ; call H procedure
+    call    H           ; call H procedure recursively 
 
 ENDIF01: nop  ; End IF01
 

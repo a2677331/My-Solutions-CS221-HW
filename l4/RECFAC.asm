@@ -14,12 +14,12 @@ PROGRAM IDENTIFICATION SECTION:
   Output :  The factorial of N.
   Input Files : None
   Output Files: None
-  Purpose:  Computes the factorial of N, after N is input by the user.
+  Purpose:  Computes the kfactorial of N, after N is input by the user.
 
 PROCEDURES CALLED:
-
+                
     External procedures called:
-	FROM iofar.lib: PutStr, PutCrLf, GetDec, PutDec
+	FROM iofar.lib: PutStr, PitCrLf, GetDec, PutDec
     Internal procedures called:
 	Greet, RecFact
 |

@@ -153,11 +153,10 @@ Find_Fid PROC    NEAR
     push bx           ; passing n - 2 para
     call    Find_Fid  ; Find_Fid(n-2), value returns to cx
     add cx,dx         ; store Find_Fid(n-2) + Find_Fid(n-1) into cx
-
     jmp ENDIF_01      ; Recursive Case ends
 
 IF_01:
-    mov cx,1          ; return 1 in cx, Base Case ends
+    mov cx,1          ; Base Case: return 1 in cx 
 
 ENDIF_01:             ; end of IF_01 statement
 

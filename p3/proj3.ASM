@@ -103,7 +103,7 @@ ENDWHILE_01:                      ; End of WHILE_01 LOOP
 mov dx,Num                        ; load Num into dx
 FOR01:
     cmp i,dx                      ; i <= Num ?
-    jg END_FOR01                  ; i > Num, end the loop
+    jg END_FOR01                  ; if i > Num, end FOR01 loop
     ; cout << find_Fib(i) << " ";
     push i                        ; pass Num parameter for Find_Fib PROC
     call    Find_Fib              ; call Find_Fib PROC to compute Fib Series
@@ -129,7 +129,7 @@ ProgramStart    ENDP ; end of main program
 ;           N -  Pass by value parameter
 ;
 ; Output:
-;           cx - Value of the Fibonacci series of N
+;           cx - Result of the Fibonacci series of N
 ;
 ; Registers:
 ;           cx
@@ -151,12 +151,11 @@ Find_Fib PROC    NEAR
     push bp
     mov bp,sp
 
-; if (N <= 1)
+; Base Case: if(N <= 1), return 1;
     cmp N,1           ; compare N and 1
-    jle IF_01         ; Base Case: Find_Fib(0) = 1 and Find_Fib(1) = 1.
+    jle IF_01         ; if N <= 1
 
-; Recursive Case: (N > 2):
-;   return (Find_Fib(n - 1) + Find_Fib(n - 2));
+; Recursive Case: if(N >= 2): return Find_Fib(n-1) + Find_Fib(n-2);
     mov ax,N          ; load N into ax
     mov bx,ax         ; load N into bx
     dec ax            ; now ax is n - 1
